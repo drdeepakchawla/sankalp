@@ -44,6 +44,10 @@ python -m sankalp.build \
 - `babies.parquet`, `sncu.parquet`: full tables, identifiers included (local use only)
 - `dashboard.html`: the dashboard with the new de-identified data embedded
 - `summary.json`: headline numbers, SNCU match rates and data-quality counts
+- `Sankalp_error_line_list_<date>.xlsx`: every data-quality issue, identifiable, for correcting records:
+  a summary, one sheet per check (with the exact problem in "Issue detail" and yellow columns to record
+  the correction), issues by staff member, a long list of every issue, and one row per record with all
+  its issues. For SNCU admissions not found in the cohort it suggests the closest cohort record to confirm.
 
 The export date is read from the REDCap file names (`--as-of` overrides it). It decides which
 babies are still under 28 days old.

@@ -74,3 +74,32 @@ def test_duplicate_needs_more_than_a_shared_phone():
     g = quality.duplicate_groups(b)
     assert g.iloc[0] == g.iloc[1] and pd.notna(g.iloc[0])   # same phone, same mother ("Bai" is ignored)
     assert g.iloc[2:].isna().all()                          # same phone (e.g. an ASHA's), different mothers
+
+
+def test_error_workbook_has_a_sheet_per_check(tmp_path):
+    from openpyxl import load_workbook
+    from sankalp import error_listing
+    babies = pd.DataFrame({
+        "baby_uid": ["2025-26-1-1", "2025-26-2-1", "2025-26-3-1"], "period": ["2025-26"] * 3, "record_id": ["1", "2", "3"],
+        "baby_no": [1, 1, 1], "mother_name": ["Asha", "Asha", "Meena"], "father_name": ["Ravi", "Ravi", "Raju"],
+        "phone1": ["9876543210", "9876543210", None], "phone2": [None] * 3, "village": ["A", "A", "B"], "res_block": ["Barwah"] * 3,
+        "dob": pd.to_datetime(["2025-05-05", "2025-05-05", "2025-06-01"]), "birth_place_type": ["Public facility"] * 3,
+        "birth_facility": ["DH Khargone"] * 3, "sex": ["Male", "Male", "Female"], "bw_g": [2500.0, 2500.0, 150.0], "ga_wk": [39.0, 39.0, 38.0],
+        "outcome": ["Alive", "Alive", "Alive"], "dod": pd.NaT, "fu_date": pd.to_datetime(["2025-06-10"] * 3), "fu_days": [36, 36, 9],
+        "reg_collector_name": ["DC A"] * 3, "fu_collector_name": ["DC B"] * 3, "birth_info_source": ["Facility data"] * 3,
+        "dup_group": ["N1", "N1", None], "status_detail": ["Day-28 call: Healthy"] * 3, "lmp": pd.NaT, "age_death_days": float("nan"),
+        "flags": [["DUPLICATE_SUSPECT"], ["DUPLICATE_SUSPECT"], ["BW_IMPLAUSIBLE"]]})
+    sncu = pd.DataFrame({
+        "admission_id": ["IND/KHR/SNCU1/2025/1"], "adm_date": pd.to_datetime(["2025-06-02"]), "dob": pd.to_datetime(["2025-06-01"]),
+        "mother_name": ["Meena"], "father_name": ["Raju"], "phone": [None], "village": ["B"], "res_block": ["Barwah"], "sex": ["Female"],
+        "bw_g": [1500.0], "ga_wk": [32.0], "admission_type": ["Inborn"], "place_of_delivery": ["DH Khargone"], "outcome": ["EXPIRED"],
+        "discharge_date": pd.to_datetime(["2025-06-04"]), "cause_or_reason": ["Sepsis"], "cause_of_death": ["Sepsis"],
+        "baby_uid": ["2025-26-3-1"], "link_tier": [2.0], "maturity": ["Preterm"], "age_at_adm_days": [1.0], "flags": [["S_DIED_COHORT_ALIVE"]]})
+    out = tmp_path / "errors.xlsx"
+    res = error_listing.write(babies, sncu, out, "2026-10-13")
+    wb = load_workbook(out)
+    assert res["issues"] == 4
+    assert [n for n in wb.sheetnames if n[:2].isdigit()] == ["01 Possible duplicates", "02 Birth weight implausible", "03 SNCU died, cohort alive"]
+    dup = wb["01 Possible duplicates"]
+    assert dup.max_row == 3 and dup.freeze_panes == "E2"
+    assert "Same baby as: 2025-26 Record 2 baby 1" in [c.value for c in dup[2]]

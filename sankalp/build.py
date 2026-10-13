@@ -7,6 +7,7 @@ Writes to --out (never commit this folder; it holds identifiable data):
   dashboard_data.txt            - de-identified, gzip+base64 payload for the dashboard
   dashboard.html                - dashboard/index.html with the payload embedded
   summary.json                  - headline numbers, match rates and flag counts
+  Sankalp_error_line_list_<date>.xlsx - every data-quality issue, one sheet per check (identifiable)
 """
 import argparse
 import json
@@ -15,7 +16,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import cohort2024, cohort2025, export, link, outcomes, quality, sncu as sncu_mod
+from . import cohort2024, cohort2025, error_listing, export, link, outcomes, quality, sncu as sncu_mod
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_MARKER = "__SANKALP_DATA__"  # inside a JS string literal in dashboard/index.html
@@ -87,6 +88,7 @@ def write(babies, s, as_of, out_dir: Path):
         if DATA_MARKER not in html:
             raise ValueError(f"{template} has no {DATA_MARKER} placeholder")
         (out_dir / "dashboard.html").write_text(html.replace(DATA_MARKER, data, 1))
+    error_listing.write(babies, s, out_dir / f"Sankalp_error_line_list_{as_of.date()}.xlsx", as_of)
     summ = summary(babies, s, as_of)
     (out_dir / "summary.json").write_text(json.dumps(summ, indent=2, default=str))
     return summ

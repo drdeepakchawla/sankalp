@@ -56,6 +56,10 @@ def pick_data():
         if not f.exists():
             st.info(f"No babies.parquet in {folder}. Run `python -m sankalp.build …` first, or switch to raw exports.")
             st.stop()
+        books = sorted(Path(folder).glob("Sankalp_error_line_list_*.xlsx"))
+        if books:
+            st.sidebar.download_button("Download error line list (Excel)", books[-1].read_bytes(), file_name=books[-1].name,
+                                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx")
         return load_output(folder, f.stat().st_mtime)
     k = st.sidebar.text_input("2024 cohort CSV", key="k2024")
     n = st.sidebar.text_input("2025-26 NHRP CSV", key="nhrp")

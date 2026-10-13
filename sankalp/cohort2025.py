@@ -144,6 +144,7 @@ def load(path) -> pd.DataFrame:
         "birth_info_source": H.clean_text(_get(df, f0, "Q2")),
         "notif_date": H.to_date(_get(df, f0, "Q7")),
         "reg_collector": codes[0],
+        "reg_collector_name": people[0],
         "mother_died": mother_dead,
         "caste": H.clean_text(_get(df, f1, "Q19")),
         "religion": H.clean_text(_get(df, f1, "Q18")),
@@ -188,7 +189,7 @@ def load(path) -> pd.DataFrame:
                 connected=H.clean_text(_get(df, fu, "Q11")).str.replace(" ", "").map(
                     {"Connected": True, "NotConnected": False}),
                 respondent=H.clean_text(_get(df, fu, "Q12")),
-                collector=codes[1 + 3 * g + slot],
+                collector=codes[1 + 3 * g + slot], collector_name=people[1 + 3 * g + slot],
                 place=H.clean_text(_get(df, fu, "Q18")),
                 place_pub=H.clean_text(_coalesce(df, fu, "Q20")).fillna(H.clean_text(_get(df, fu, "Q21"))),
                 place_pvt=H.clean_text(_get(df, fu, "Q22")),
@@ -196,6 +197,7 @@ def load(path) -> pd.DataFrame:
                 fu_sex=H.sex(_get(df, fu, "Q7")), fu_bw=H.to_num(_get(df, fu, "Q8")),
                 asha_visit=H.clean_text(_get(df, fu, "Q29"))))
         _combine(x, src)
+        x["status_detail"] = ("At birth: " + born.astype("string") + "; ").fillna("") + x["status_detail"]
         babies.append(x[present.fillna(False)])
 
     out = pd.concat(babies, ignore_index=True)
@@ -239,7 +241,7 @@ def _combine(x, src):
     x["fu_date"] = last_alive
     any_conn = pd.concat([s["connected"].eq(True) for s in fus], axis=1).any(axis=1)
     x["fu_connected"] = any_conn.astype("boolean").where(attempted)
-    for col in ("fu_respondent", "fu_collector", "death_place_type", "death_facility",
+    for col in ("fu_respondent", "fu_collector", "fu_collector_name", "death_place_type", "death_facility",
                 "death_factor_other_text", "asha_visit"):
         x[col] = pd.Series(pd.NA, index=idx, dtype=object)
     factors = [[] for _ in range(len(x))]
@@ -249,6 +251,7 @@ def _combine(x, src):
         use = (died_here | alive_here) & x["fu_respondent"].isna()
         x.loc[use, "fu_respondent"] = s["respondent"][use]
         x.loc[use, "fu_collector"] = s["collector"][use]
+        x.loc[use, "fu_collector_name"] = s["collector_name"][use]
         x.loc[use, "asha_visit"] = s["asha_visit"][use]
         x.loc[died_here & x["fu_date"].isna(), "fu_date"] = s["date"][died_here & x["fu_date"].isna()]
     for s in [s for s in src if "place" in s]:
@@ -272,3 +275,21 @@ def _combine(x, src):
     x["fu_sex"] = main["fu_sex"]
     x["fu_bw"] = main["fu_bw"]
     x["death_reported_after_d28"] = False
+    x["status_detail"] = _status_trail(src)
+
+
+_SOURCE_LABELS = {"notification": "Notification", "registration": "Registration", "followup3": "Day-28 call",
+                  "followup2": "Day-28 call (set 2)", "followup1": "Day-28 call (set 1)"}
+
+
+def _status_trail(src) -> pd.Series:
+    """What each form said, e.g. 'Registration: Alive on 02-03-2025; Day-28 call: Dead on 05-04-2025, died 20-03-2025'."""
+    parts = []
+    for s in src:
+        txt = s["status"].astype("string")
+        if s["connected"] is not None:
+            txt = txt.fillna(s["connected"].map({False: "not connected"}).astype("string"))
+        on = (" on " + s["date"].dt.strftime("%d-%m-%Y")).astype("string").fillna("")
+        died = (", died " + s["dod"].dt.strftime("%d-%m-%Y")).astype("string").fillna("")
+        parts.append((_SOURCE_LABELS[s["name"]] + ": " + txt + on + died).where(txt.notna()))
+    return pd.concat(parts, axis=1).apply(lambda r: "; ".join(v for v in r if isinstance(v, str)), axis=1)

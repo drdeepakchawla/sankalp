@@ -36,7 +36,8 @@ def load(path) -> pd.DataFrame:
     ptype, fac = _place_of_birth(df["Place of birth"])
     fac_other = H.clean_text(df["Place of birth if private health facility within district"]).fillna(
         H.clean_text(df["Place of birth, if outside district"]))
-    reg_collector, = H.code_people(H.clean_text(df["Who registered birth in Sankalp?"]), prefix="R24-")
+    reg_raw = H.clean_text(df["Who registered birth in Sankalp?"])
+    reg_collector, = H.code_people(reg_raw, prefix="R24-")
     fu_people = [H.clean_text(_col(df, "Who collected 28 days outcome?", k)) for k in range(3)]
     fu_codes = H.code_people(*fu_people, prefix="F24-")
     n_babies = H.to_num(df["Number of babies born"])
@@ -63,6 +64,7 @@ def load(path) -> pd.DataFrame:
         "n_babies": n_babies,
         "birth_info_source": H.clean_text(df["Source of confirmation of birth data"]),
         "reg_collector": reg_collector,
+        "reg_collector_name": reg_raw,
         "mother_alive_d42": H.clean_text(df["Was mother alive on day 42"]),
         "caste": pd.NA,
         "religion": pd.NA,
@@ -81,11 +83,15 @@ def load(path) -> pd.DataFrame:
         x["preterm_reported"] = pd.NA
         x["admitted_after_birth"] = H.clean_text(_col(df, "Was baby admitted to any health facility after birth?", b))
         x["fu_collector"] = fu_codes[slot]
+        x["fu_collector_name"] = fu_people[slot]
         x["fu_date"] = H.to_date(_col(df, "Date of collection of information", f))
         x["fu_respondent"] = H.clean_text(_col(df, "Source of information", f))
         x["fu_connected"] = pd.NA
         x["alive_d28_reported"] = H.clean_text(_col(df, "Was baby alive on day 28", b))
         x["dod"] = H.to_date(_col(df, "If died, date of death", f))
+        x["status_detail"] = ("Born alive: " + born.fillna("not recorded") + "; alive on day 28: "
+                              + x["alive_d28_reported"].fillna("not recorded")
+                              + (", died " + x["dod"].dt.strftime("%d-%m-%Y")).astype("string").fillna(""))
         pod = H.clean_text(_col(df, "If died, place of death", f))
         dfac = H.clean_text(_col(df, "Died at which health facility in district?", f))
         outside = H.clean_text(_col(df, "If died in a facility outside district, where?", f))

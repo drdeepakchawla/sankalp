@@ -1,0 +1,1189 @@
+<title>Sankalp Newborn Outcomes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a surveillance console. Sticky tab + filter bar, then one section per question
+   (what, where, who, when/why, SNCU, data quality, ask). Panels only where a chart lives. */
+:root {
+  --bg: #f4f6f5; --surface: #fcfcfb; --ink: #111716; --ink-2: #48524f; --muted: #79837f;
+  --line: #dfe4e1; --line-2: #c3cbc7; --accent: #1e5d63; --accent-ink: #ffffff; --accent-weak: #e1ecec;
+  --s1: #2a78d6; --s1-wash: rgba(42,120,214,.12); --s2: #eb6834; --ci: #1d2a3a;
+  --crit: #d03b3b; --crit-bg: #fbe7e6; --serious: #ec835a; --warn: #fab219; --warn-bg: #fdf1d6; --good: #0ca30c; --minor-bg: #eceeed;
+  --h1: #cde2fb; --h2: #9ec5f4; --h3: #6da7ec; --h4: #3987e5; --h5: #256abf; --h6: #184f95; --h7: #0d366b;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 8px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1211; --surface: #161b1a; --ink: #edf1ef; --ink-2: #c1c9c6; --muted: #8b9592;
+  --line: #273030; --line-2: #3a4341; --accent: #86c7cc; --accent-ink: #0e1211; --accent-weak: #1c2d2e;
+  --s1: #3987e5; --s1-wash: rgba(57,135,229,.18); --s2: #d95926; --ci: #e6edf6;
+  --crit-bg: #3a1d1c; --warn-bg: #3a2f14; --minor-bg: #232a29; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0e1211; --surface: #161b1a; --ink: #edf1ef; --ink-2: #c1c9c6; --muted: #8b9592;
+  --line: #273030; --line-2: #3a4341; --accent: #86c7cc; --accent-ink: #0e1211; --accent-weak: #1c2d2e;
+  --s1: #3987e5; --s1-wash: rgba(57,135,229,.18); --s2: #d95926; --ci: #e6edf6;
+  --crit-bg: #3a1d1c; --warn-bg: #3a2f14; --minor-bg: #232a29; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: clamp(16px, 3vw, 32px); }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(22px, 3.2vw, 30px); font-weight: 700; letter-spacing: -.01em; }
+h2 { font-size: 19px; font-weight: 650; }
+h3 { font-size: 15px; font-weight: 600; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); font-size: .92em; white-space: nowrap; }
+.muted { color: var(--muted); }
+.ink2 { color: var(--ink-2); }
+.num { font-variant-numeric: tabular-nums; }
+button, select, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header.top { padding-block: 22px 14px; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: end; justify-content: space-between; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+.asof { font-size: 13px; color: var(--ink-2); }
+.asof b { font-weight: 600; color: var(--ink); }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+@media (max-width: 720px) { .bar { position: static; } }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs::-webkit-scrollbar { display: none; }
+nav.tabs a { padding: 10px 12px; border-bottom: 2px solid transparent; color: var(--ink-2); text-decoration: none; white-space: nowrap; font-weight: 500; }
+nav.tabs a:hover { color: var(--ink); }
+nav.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: end; padding-block: 10px 12px; }
+.f { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.f label { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.f select { min-width: 0; max-width: 190px; padding: 6px 28px 6px 9px; border: 1px solid var(--line-2); border-radius: 6px; background: var(--surface); appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 52%, calc(100% - 9px) 52%; background-size: 5px 5px; background-repeat: no-repeat; }
+.f select.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.btn { padding: 6px 12px; border: 1px solid var(--line-2); border-radius: 6px; background: var(--surface); cursor: pointer; }
+.btn:hover { border-color: var(--ink-2); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--ink-2); }
+.btn:disabled { opacity: .5; cursor: default; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; gap: 4px; align-items: center; padding: 2px 8px; border-radius: 999px; background: var(--accent-weak); font-size: 12.5px; }
+.chip button { border: 0; background: none; padding: 0 2px; cursor: pointer; color: var(--ink-2); }
+
+main { padding-block: 22px 60px; }
+section.tab { display: grid; gap: 22px; }
+section.tab[hidden] { display: none; }
+.sec-head { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; justify-content: space-between; }
+.sec-head p { color: var(--ink-2); max-width: 70ch; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr)); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.panel header { display: grid; gap: 2px; }
+.panel header p { color: var(--muted); font-size: 13px; }
+.note { font-size: 12.5px; color: var(--muted); }
+
+/* Headline */
+.headline { display: grid; gap: 16px; grid-template-columns: minmax(0, 1.1fr) minmax(0, 2fr); align-items: stretch; }
+@media (max-width: 860px) { .headline { grid-template-columns: 1fr; } }
+.hero { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 20px; display: grid; gap: 6px; align-content: start; }
+.hero .lab { font-size: 13px; color: var(--ink-2); font-weight: 500; }
+.hero .val { font-size: 56px; line-height: 1; font-weight: 700; letter-spacing: -.02em; }
+.hero .val small { font-size: 15px; font-weight: 500; color: var(--ink-2); letter-spacing: 0; margin-left: 6px; }
+.hero .ci { font-size: 13px; color: var(--muted); }
+.tiles { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; display: grid; gap: 2px; align-content: start; }
+.tile .lab { font-size: 12.5px; color: var(--ink-2); }
+.tile .val { font-size: 24px; font-weight: 650; }
+.tile .sub { font-size: 12px; color: var(--muted); }
+.findings { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); }
+.findings b { color: var(--ink); font-weight: 600; }
+
+/* Horizontal bars */
+.hbars { display: grid; gap: 4px; position: relative; }
+.hrow { display: grid; grid-template-columns: minmax(90px, 34%) minmax(0, 1fr) 64px; gap: 10px; align-items: center; min-height: 26px; padding: 1px 4px; border-radius: 4px; }
+.hrow.click { cursor: pointer; }
+.hrow.click:hover, .hrow.active { background: var(--accent-weak); }
+.hrow .lab { font-size: 13px; line-height: 1.25; overflow-wrap: break-word; min-width: 0; }
+.hrow .lab small { color: var(--muted); font-size: 11.5px; display: block; }
+.hrow .val { font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.hrow.dim .lab, .hrow.dim .val { color: var(--muted); }
+.track { position: relative; height: 18px; }
+.track .fill { position: absolute; left: 0; top: 3px; height: 12px; border-radius: 0 4px 4px 0; background: var(--s1); }
+.hrow.dim .fill { background: var(--line-2); }
+.track .ci { position: absolute; top: 8px; height: 2px; background: var(--ci); opacity: .55; }
+.track .ci::before, .track .ci::after { content: ""; position: absolute; top: -4px; width: 1.5px; height: 10px; background: var(--ci); }
+.track .ci::before { left: 0; } .track .ci::after { right: 0; }
+.refline { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--ink-2); opacity: .6; pointer-events: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--ink-2); align-items: center; }
+.key { display: inline-block; width: 14px; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.key.line { height: 2px; border-radius: 1px; }
+.key.ci { height: 2px; background: var(--ci); opacity: .55; }
+
+/* SVG charts */
+.chart { position: relative; width: 100%; min-width: 0; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { fill: var(--muted); font: 11px var(--font-ui); font-variant-numeric: tabular-nums; }
+.chart .grid line { stroke: var(--line); stroke-width: 1; }
+.chart .axis line { stroke: var(--line-2); }
+.tip { position: fixed; z-index: 50; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--line-2); border-radius: 6px; padding: 8px 10px; font-size: 12.5px; box-shadow: 0 6px 20px rgba(0,0,0,.12); max-width: 280px; }
+.tip .t { font-weight: 600; margin-bottom: 2px; }
+.tip .r { display: flex; gap: 8px; justify-content: space-between; }
+.tip .r b { font-variant-numeric: tabular-nums; }
+
+/* Tables */
+.tw { overflow-x: auto; min-width: 0; border-radius: 6px; }
+.tw.tall { max-height: 560px; overflow-y: auto; }
+.tw.tall thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 600; white-space: nowrap; }
+th.sort { cursor: pointer; user-select: none; }
+th.sort:hover { color: var(--ink); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.click { cursor: pointer; }
+tr.click:hover td { background: var(--accent-weak); }
+tr.sel td { background: var(--accent-weak); }
+.heat td.cell { text-align: center; font-variant-numeric: tabular-nums; min-width: 64px; }
+.heat td.cell small { display: block; font-size: 10.5px; opacity: .8; }
+
+.sev { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.sev::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+.sev.critical { background: var(--crit-bg); } .sev.critical::before { background: var(--crit); }
+.sev.major { background: var(--warn-bg); } .sev.major::before { background: var(--warn); }
+.sev.minor { background: var(--minor-bg); } .sev.minor::before { background: var(--muted); }
+.flagtag { display: inline-block; font-family: var(--font-mono); font-size: 11px; padding: 0 5px; border: 1px solid var(--line-2); border-radius: 4px; margin: 1px 2px 1px 0; color: var(--ink-2); }
+
+.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 4px 10px; cursor: pointer; font-size: 13px; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.spacer { flex: 1; }
+
+/* Ask */
+.ask { display: grid; gap: 14px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+@media (max-width: 860px) { .ask { grid-template-columns: 1fr; } }
+.msgs { display: grid; gap: 12px; max-height: 64vh; overflow-y: auto; padding-right: 4px; }
+.msg { padding: 10px 12px; border-radius: 8px; max-width: 100%; overflow-wrap: anywhere; }
+.msg.user { background: var(--accent-weak); justify-self: end; max-width: 85%; }
+.msg.bot { background: var(--surface); border: 1px solid var(--line); }
+.msg.bot .steps { font-size: 12px; color: var(--muted); margin-bottom: 6px; font-family: var(--font-mono); }
+.msg.bot ul { margin: 4px 0; padding-left: 18px; }
+.msg.bot p + p { margin-top: 6px; }
+.msg.bot table { margin: 6px 0; }
+.askbox { display: grid; gap: 8px; }
+.askbox textarea { width: 100%; min-height: 70px; resize: vertical; padding: 10px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--surface); }
+.sugg { display: grid; gap: 6px; }
+.sugg button { text-align: left; border: 1px solid var(--line); background: var(--surface); padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.sugg button:hover { border-color: var(--accent); }
+details.about summary { cursor: pointer; font-weight: 600; }
+details.about { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; }
+details.about dl { display: grid; grid-template-columns: minmax(120px, 220px) minmax(0, 1fr); gap: 6px 16px; margin: 12px 0 0; font-size: 13.5px; }
+details.about dt { font-weight: 600; } details.about dd { margin: 0; color: var(--ink-2); max-width: 75ch; }
+@media (max-width: 600px) { details.about dl { grid-template-columns: 1fr; } details.about dd { margin-bottom: 8px; } }
+.empty { padding: 28px; text-align: center; color: var(--muted); }
+.loading { padding: 60px 0; text-align: center; color: var(--ink-2); }
+@media (prefers-reduced-motion: no-preference) { .chart svg .pt { transition: r .12s; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Sankalp · Khargone district, Madhya Pradesh</div>
+      <h1>Newborn outcomes and neonatal mortality</h1>
+    </div>
+    <div class="asof" id="asof">Loading data…</div>
+  </header>
+</div>
+<div class="bar">
+  <div class="wrap">
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      <a href="#overview">Overview</a><a href="#where">Where</a><a href="#who">Which babies</a><a href="#when">When &amp; why</a>
+      <a href="#sncu">SNCU</a><a href="#quality">Data quality</a><a href="#explore">Cross-tab</a><a href="#ask">Ask the data</a>
+    </nav>
+    <div class="filters" id="filters"></div>
+  </div>
+</div>
+
+<main class="wrap" id="main">
+  <div class="loading" id="loading">Unpacking 89,000 records…</div>
+
+  <section class="tab" id="t-overview" hidden>
+    <div class="headline">
+      <div class="hero">
+        <div class="lab">Neonatal mortality rate</div>
+        <div class="val" id="h-nmr">–<small>per 1,000 live births</small></div>
+        <div class="ci" id="h-ci"></div>
+        <div class="ink2" id="h-sub" style="font-size:13.5px"></div>
+      </div>
+      <div class="tiles" id="tiles"></div>
+    </div>
+    <div class="grid two">
+      <div class="panel">
+        <header><h3>What the numbers say</h3><p>Computed for the current filters.</p></header>
+        <ul class="findings" id="findings"></ul>
+      </div>
+      <div class="panel">
+        <header><h3>The two follow-up periods</h3><p>2024 cohort (births May–Dec 2024, outcomes collected afterwards) and the 2025–26 cohort (followed up by phone around day 28).</p></header>
+        <div class="tw"><table id="period-table"></table></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="row">
+        <header><h3>Neonatal mortality by month of birth</h3><p>Deaths at 0–27 days per 1,000 live births with a known day-28 outcome. Hollow points: under 85% of outcomes known yet, so the rate is provisional; months under 50% known are not plotted.</p></header>
+        <span class="spacer"></span>
+        <div class="seg" id="trend-gran"><button aria-pressed="true" data-v="m">Monthly</button><button aria-pressed="false" data-v="q">Quarterly</button></div>
+      </div>
+      <div class="chart" id="trend"></div>
+      <div class="legend"><span><span class="key line" style="background:var(--s1)"></span>NMR</span><span><span class="key line" style="background:var(--ink-2)"></span>NMR for all months in view</span></div>
+      <details><summary class="note" style="cursor:pointer">Show as a table</summary><div class="tw"><table id="trend-table"></table></div></details>
+    </div>
+    <div class="grid">
+      <div class="panel"><header><h3>Live births per month</h3></header><div class="chart" id="sm-births"></div></div>
+      <div class="panel"><header><h3>Neonatal deaths per month</h3></header><div class="chart" id="sm-deaths"></div></div>
+      <div class="panel"><header><h3>Day-28 outcome known</h3><p>Share of live births with a known outcome.</p></header><div class="chart" id="sm-cov"></div></div>
+    </div>
+    <details class="about" id="about">
+      <summary>How these numbers are made</summary>
+      <dl>
+        <dt>Neonatal death</dt><dd>A live-born baby who died at age 0–27 completed days (WHO). A death on the programme's "day 28" (date of birth + 28) is counted as post-neonatal. Early neonatal = 0–6 days.</dd>
+        <dt>NMR denominator</dt><dd>Live births whose day-28 outcome is known (alive, or died). Babies not yet 28 days old, not reachable, or not followed up are left out of the rate and counted under "outcome known". With 94–97% known, the rate may be slightly overstated if missing babies are more likely to be alive.</dd>
+        <dt>Stillbirth rate</dt><dd>Stillbirths per 1,000 total births (live + still).</dd>
+        <dt>95% CI</dt><dd>Wilson interval for the proportion of known live births who died. Wide whiskers mean few births: read those rates with care.</dd>
+        <dt>Sources</dt><dd>2024: Sankalp Khargone REDCap project (one form per pregnancy, outcomes collected retrospectively, median about 5 months after birth). 2025–26: NHRP Sankalp REDCap project (birth notification, registration and a day-28 phone follow-up per baby). SNCU: DH Khargone admission register, May 2024 – Sep 2026.</dd>
+        <dt>Where</dt><dd>Block of residence as recorded. "Out of district" = mother not a usual resident of Khargone.</dd>
+        <dt>Gestation</dt><dd>Mostly from LMP. Values outside 22–44 weeks are treated as missing and flagged.</dd>
+        <dt>SNCU linkage</dt><dd>SNCU admissions were matched to cohort babies on family phone number + date of birth, or both parents' names + date of birth (within 2 days). 75% of admissions matched; match quality: 97% agree on sex, median weight difference 80 g.</dd>
+        <dt>Privacy</dt><dd>This page holds no names, phone numbers, villages or exact dates. Records are identified only by REDCap Record ID or SNCU admission ID, and staff by codes, so errors can be looked up in REDCap.</dd>
+      </dl>
+    </details>
+  </section>
+
+  <section class="tab" id="t-where" hidden>
+    <div class="sec-head"><h2>Where babies are dying</h2><p>Click a block or place to filter the whole dashboard to it.</p></div>
+    <div class="grid two">
+      <div class="panel"><header><h3>NMR by block of residence</h3><p>Bars: NMR; whiskers: 95% CI; vertical line: NMR for everything in view.</p></header><div id="w-block"></div></div>
+      <div class="panel"><header><h3>NMR by place of birth</h3><p>Where the delivery happened.</p></header><div id="w-place"></div>
+        <header style="margin-top:8px"><h3>Where the deaths happened</h3><p>Share of neonatal deaths by place of death.</p></header><div id="w-dplace"></div></div>
+    </div>
+    <div class="panel"><header><h3>Blocks in detail</h3></header><div class="tw"><table id="w-block-table"></table></div></div>
+    <div class="grid two">
+      <div class="panel"><header><h3>Facility of birth</h3><p>Public facilities with at least 100 live births in view. NMR here is for babies born at the facility, wherever they later died.</p></header><div class="tw tall"><table id="w-fac"></table></div></div>
+      <div class="panel"><header><h3>Facilities where babies died</h3><p>Deaths in a health facility, by facility.</p></header><div class="tw tall"><table id="w-dfac"></table></div></div>
+    </div>
+  </section>
+
+  <section class="tab" id="t-who" hidden>
+    <div class="sec-head"><h2>Which babies are dying</h2><p>NMR and each group's share of all neonatal deaths. Click a bar to filter.</p></div>
+    <div class="grid" id="who-grid"></div>
+  </section>
+
+  <section class="tab" id="t-when" hidden>
+    <div class="sec-head"><h2>When and why</h2><p>Age at death, and the factors recorded at the death report.</p></div>
+    <div class="grid two">
+      <div class="panel"><header><h3>Age at death</h3><p>Neonatal deaths by day of life.</p></header><div class="chart" id="wh-age"></div></div>
+      <div class="panel"><header><h3>Cumulative deaths by day of life</h3><p>Share of all neonatal deaths that had happened by each day.</p></header><div class="chart" id="wh-cum"></div></div>
+    </div>
+    <div class="grid two">
+      <div class="panel"><header><h3>Factors associated with death</h3><p>2025–26 only: ticked on the registration or day-28 form (more than one allowed), with "other" text sorted into groups. Share of deaths with each factor.</p></header><div id="wh-fac"></div></div>
+      <div class="panel"><header><h3>Cause of death in the SNCU</h3><p>For cohort babies who died after an SNCU admission at DH Khargone.</p></header><div id="wh-cod"></div></div>
+    </div>
+    <div class="panel"><header><h3>Age at death by place of death</h3></header><div class="tw"><table id="wh-xt" class="heat"></table></div></div>
+  </section>
+
+  <section class="tab" id="t-sncu" hidden>
+    <div class="sec-head"><h2>SNCU, DH Khargone</h2><p>All admissions in the register. Filters applied here: period, months (admission month), block, birth weight and sex.</p></div>
+    <div class="tiles" id="s-tiles"></div>
+    <div class="grid two">
+      <div class="panel"><header><h3>Admissions per month</h3></header><div class="chart" id="s-adm"></div></div>
+      <div class="panel"><header><h3>Case fatality per month</h3><p>Share of admissions that ended in death.</p></header><div class="chart" id="s-cfr"></div></div>
+    </div>
+    <div class="grid">
+      <div class="panel"><header><h3>Case fatality by birth weight</h3></header><div id="s-bw"></div></div>
+      <div class="panel"><header><h3>Case fatality by gestation</h3></header><div id="s-ga"></div></div>
+      <div class="panel"><header><h3>Case fatality by type of admission</h3></header><div id="s-type"></div></div>
+    </div>
+    <div class="grid two">
+      <div class="panel"><header><h3>Reason for admission</h3><p>Top 10, with case fatality.</p></header><div class="tw"><table id="s-ind"></table></div></div>
+      <div class="panel"><header><h3>Cause of death</h3><p>All SNCU deaths in view.</p></header><div id="s-cod"></div></div>
+    </div>
+    <div class="grid two">
+      <div class="panel"><header><h3>What happened after the SNCU</h3><p>Admissions matched to a cohort baby: SNCU outcome against the baby's day-28 outcome. Deaths after discharge, LAMA or referral show up in the "Died" column.</p></header><div class="tw"><table id="s-after"></table></div></div>
+      <div class="panel"><header><h3>Matching to the cohort</h3><p>Share of SNCU admissions found in the cohort files, by block of residence.</p></header><div id="s-link"></div></div>
+    </div>
+  </section>
+
+  <section class="tab" id="t-quality" hidden>
+    <div class="sec-head"><h2>Data quality</h2><p>Checks run on every record. Click a check to list the records, then save the list as CSV or copy the Record IDs to correct them in REDCap.</p></div>
+    <div class="tiles" id="q-tiles"></div>
+    <div class="panel"><div class="row"><header><h3>Checks on cohort babies</h3></header><span class="spacer"></span><div class="seg" id="q-sevf"><button aria-pressed="true" data-v="">All</button><button aria-pressed="false" data-v="critical">Critical</button><button aria-pressed="false" data-v="major">Major</button><button aria-pressed="false" data-v="minor">Minor</button></div></div>
+      <div class="tw"><table id="q-table"></table></div></div>
+    <div class="panel" id="q-list-panel" hidden>
+      <div class="row"><header><h3 id="q-list-title">Records</h3><p id="q-list-sub"></p></header><span class="spacer"></span>
+        <button class="btn" id="q-copy">Copy Record IDs</button><button class="btn" id="q-csv" hidden>Save as CSV</button><button class="btn ghost" id="q-close">Close</button></div>
+      <div class="tw tall"><table id="q-list"></table></div>
+      <textarea id="q-copy-fallback" hidden readonly style="width:100%;min-height:80px"></textarea>
+    </div>
+    <div class="grid two">
+      <div class="panel"><header><h3>Day-28 outcome completeness by block</h3><p>Live births whose follow-up is due (28+ days old).</p></header><div class="tw"><table id="q-block"></table></div></div>
+      <div class="panel"><header><h3>Issues by registering staff</h3><p>Staff are shown as codes. Share of their records with each kind of issue.</p></header><div class="tw tall"><table id="q-staff"></table></div></div>
+    </div>
+    <div class="panel"><header><h3>Checks on SNCU admissions</h3></header><div class="tw"><table id="q-stable"></table></div></div>
+  </section>
+
+  <section class="tab" id="t-explore" hidden>
+    <div class="sec-head"><h2>Cross-tab</h2><p>Pick any two characteristics to see NMR in every combination. Cells are shaded by NMR; small numbers below each rate are deaths / known live births.</p></div>
+    <div class="panel">
+      <div class="row">
+        <div class="f"><label for="x-rows">Rows</label><select id="x-rows"></select></div>
+        <div class="f"><label for="x-cols">Columns</label><select id="x-cols"></select></div>
+        <div class="f"><label for="x-metric">Show</label><select id="x-metric"><option value="nmr">NMR</option><option value="deaths">Neonatal deaths</option><option value="lb">Live births</option><option value="sbr">Stillbirth rate</option><option value="cov">Outcome known %</option></select></div>
+      </div>
+      <div class="tw"><table id="x-table" class="heat"></table></div>
+    </div>
+  </section>
+
+  <section class="tab" id="t-ask" hidden>
+    <div class="sec-head"><h2>Ask the data</h2><p>Ask a question in plain words. Claude answers by running counts on this page's de-identified records, and says which numbers it used.</p></div>
+    <div class="ask">
+      <div class="panel">
+        <div class="msgs" id="msgs" aria-live="polite"></div>
+        <div class="askbox">
+          <label for="q" class="note">Your question</label>
+          <textarea id="q" placeholder="e.g. Which blocks had the highest NMR among babies born at home in 2025–26?"></textarea>
+          <div class="row"><button class="btn primary" id="ask-btn">Ask</button><button class="btn" id="stop-btn" hidden>Stop</button><button class="btn ghost" id="clear-btn">Clear chat</button><span class="note" id="ask-status"></span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <header><h3>Try asking</h3></header>
+        <div class="sugg" id="sugg"></div>
+        <p class="note">Answers use your own Claude account. The first question asks your permission. Claude sees only counts and de-identified records from this page.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+"use strict";
+const DATA_B64 = "__SANKALP_DATA__";
+
+// ---------- formatting ----------
+const nf = new Intl.NumberFormat("en-IN");
+const n0 = x => (x == null || !isFinite(x)) ? "–" : nf.format(Math.round(x));
+const f1 = x => (x == null || !isFinite(x)) ? "–" : x.toFixed(1);
+const pc = (x, d = 1) => (x == null || !isFinite(x)) ? "–" : (100 * x).toFixed(d) + "%";
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const mlab = m => m && m.length === 7 ? `${MONTHS[+m.slice(5) - 1]} ${m.slice(0, 4)}` : (m || "");
+const mshort = m => m && m.length === 7 ? `${MONTHS[+m.slice(5) - 1]} ${m.slice(2, 4)}` : (m || "");
+const pretty = s => s == null ? "(missing)" : String(s).replace(">=", "≥ ").replace(/(\d)-(\d)/g, "$1–$2").replace("Missing/implausible", "Missing / implausible").replace("Other public facility", "Other or outside-district facility");
+const deaths = n => `${n0(n)} death${n === 1 ? "" : "s"}`;
+const el = (tag, attrs = {}, ...kids) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v; else if (k === "text") e.textContent = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) e.append(k instanceof Node ? k : document.createTextNode(String(k)));
+  return e;
+};
+const $ = id => document.getElementById(id);
+const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+// ---------- data ----------
+let D, B, S;
+const ORDER = {
+  bw_band: ["<1000 g","1000-1499 g","1500-1999 g","2000-2499 g","2500-3999 g",">=4000 g","Missing/implausible"],
+  ga_band: ["<28 wk","28-31 wk","32-33 wk","34-36 wk","37-41 wk",">=42 wk","Missing/implausible"],
+  death_age: ["Day 0","Day 1","Day 2-6","Day 7-13","Day 14-27","Age unknown"],
+  outcome: ["Alive","Died","Died after day 27","Stillbirth","Pending (under 28 days)","Unknown - not reachable","Unknown - not followed up","Unknown - not known"],
+  place: ["Public facility","Private facility","Home","On the way","Outside district","Unknown"],
+  death_place: ["Public facility","Private facility","Outside district","Home","On the way"],
+  plurality: ["Single","Twins","Triplets"], sex: ["Male","Female","Ambiguous","Unknown"],
+  sncu_outcome: ["DISCHARGED","LAMA","REFERRED","EXPIRED","Not recorded"],
+};
+const DIMS = { // cohort characteristics offered in breakdowns and cross-tabs
+  period: "Period", block: "Block of residence", place: "Place of birth", facility: "Facility of birth", bw_band: "Birth weight",
+  ga_band: "Gestation", preterm: "Term / preterm", sex: "Sex", plurality: "Single / multiple", delivery: "Type of delivery (2025–26)",
+  born_cond: "Condition at birth (2025–26)", sncu_adm: "Admitted to SNCU (linked)", res_type: "Rural / urban (2025–26)",
+  caste: "Caste category (2025–26)", religion: "Religion (2025–26)", source: "Source of birth information", year: "Year of birth",
+};
+
+async function decode(b64) {
+  const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const stream = new Blob([bin]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return JSON.parse(await new Response(stream).text());
+}
+function prep(t) {
+  const T = { n: 0, c: {}, x: {}, s: {} };
+  for (const [k, v] of Object.entries(t)) {
+    T.n = v.v.length;
+    if (v.t === "c") T.c[k] = { d: v.d, v: Int16Array.from(v.v) };
+    else if (v.t === "n") { const a = new Float64Array(v.v.length); for (let i = 0; i < a.length; i++) a[i] = v.v[i] == null ? NaN : v.v[i]; T.x[k] = a; }
+    else T.s[k] = v.v;
+  }
+  return T;
+}
+function addDerived(T) { // categorical columns built in the page
+  const mk = (name, labels, fn) => { const v = new Int16Array(T.n); for (let i = 0; i < T.n; i++) v[i] = fn(i); T.c[name] = { d: labels, v }; };
+  const md = T.c.month.d, mv = T.c.month.v;
+  const years = [...new Set(md.map(m => m.slice(0, 4)))].sort();
+  mk("year", years, i => mv[i] < 0 ? -1 : years.indexOf(md[mv[i]].slice(0, 4)));
+  const q = [...new Set(md.map(m => m.slice(0, 4) + "-Q" + (Math.floor((+m.slice(5) - 1) / 3) + 1)))].sort();
+  const qm = md.map(m => q.indexOf(m.slice(0, 4) + "-Q" + (Math.floor((+m.slice(5) - 1) / 3) + 1)));
+  mk("quarter", q, i => mv[i] < 0 ? -1 : qm[mv[i]]);
+  if (T.x.sncu_n) mk("sncu_adm", ["Yes", "No"], i => T.x.sncu_n[i] > 0 ? 0 : 1);
+  if (T.x.born_sick) { const per = T.c.period; const p25 = per.d.indexOf("2025-26");
+    mk("born_cond", ["Well at birth", "Sick at birth"], i => per.v[i] !== p25 || !T.x.lb[i] ? -1 : (T.x.born_sick[i] ? 1 : 0)); }
+}
+const lab = (T, k, i) => { const c = T.c[k]; const v = c.v[i]; return v < 0 ? null : c.d[v]; };
+const ordered = (k, labels) => { const o = ORDER[k]; if (!o) return labels; return [...labels].sort((a, b) => (o.indexOf(a) + 1 || 99) - (o.indexOf(b) + 1 || 99)); };
+
+// ---------- filters ----------
+const F = { period: "", from: "", to: "", block: "", place: "", bw_band: "", ga_band: "", sex: "", plurality: "", facility: "", sncu_adm: "" };
+const FILTER_DEFS = [
+  ["period", "Period"], ["from", "From"], ["to", "To"], ["block", "Block"], ["place", "Place of birth"], ["bw_band", "Birth weight"],
+  ["ga_band", "Gestation"], ["sex", "Sex"], ["plurality", "Single / multiple"], ["facility", "Facility of birth"], ["sncu_adm", "SNCU admission"],
+];
+const MORE = new Set(["ga_band", "sex", "plurality", "facility", "sncu_adm"]);
+let moreOpen = false;
+function buildFilters() {
+  const box = $("filters"); box.textContent = "";
+  for (const [k, label] of FILTER_DEFS) {
+    const s = el("select", { id: "f-" + k, "aria-label": label });
+    let opts;
+    if (k === "from" || k === "to") opts = B.c.month.d.map(m => [m, mlab(m)]);
+    else opts = ordered(k, B.c[k].d).map(v => [v, pretty(v)]);
+    s.append(el("option", { value: "", text: k === "from" ? "First month" : k === "to" ? "Latest month" : "All" }));
+    for (const [v, t] of opts) s.append(el("option", { value: v, text: t }));
+    s.value = F[k];
+    s.addEventListener("change", () => { F[k] = s.value; store.set("sankalp.filters", F); refresh(); });
+    box.append(el("div", { class: "f" + (MORE.has(k) ? " more" : ""), hidden: MORE.has(k) && !moreOpen }, el("label", { for: "f-" + k, text: label }), s));
+  }
+  box.append(el("button", { class: "btn ghost", id: "f-more", "aria-expanded": String(moreOpen), text: "More filters", onclick: () => {
+    moreOpen = !moreOpen; for (const d of box.querySelectorAll(".f.more")) d.hidden = !moreOpen; $("f-more").setAttribute("aria-expanded", String(moreOpen)); syncFilterUI(); } }));
+  box.append(el("button", { class: "btn ghost", id: "f-reset", text: "Clear filters", onclick: () => { for (const k in F) F[k] = ""; store.set("sankalp.filters", F); refresh(); } }));
+}
+function syncFilterUI() {
+  for (const [k] of FILTER_DEFS) { const s = $("f-" + k); if (s) { s.value = F[k]; s.classList.toggle("on", !!F[k]); } }
+  $("f-reset").hidden = !Object.values(F).some(Boolean);
+  const nMore = [...MORE].filter(k => F[k]).length;
+  $("f-more").textContent = moreOpen ? "Fewer filters" : nMore ? `More filters (${nMore} on)` : "More filters";
+}
+function setFilter(k, v) { F[k] = F[k] === v ? "" : v; store.set("sankalp.filters", F); refresh(); }
+
+function babyIdx(skip = []) {
+  const T = B, n = T.n, conds = [];
+  for (const k of ["period", "block", "place", "bw_band", "ga_band", "sex", "plurality", "facility", "sncu_adm"]) {
+    if (!F[k] || skip.includes(k)) continue;
+    conds.push([T.c[k].v, T.c[k].d.indexOf(F[k])]);
+  }
+  const md = T.c.month.d, mv = T.c.month.v;
+  const lo = F.from && !skip.includes("months") ? md.indexOf(F.from) : -1;
+  const hi = F.to && !skip.includes("months") ? md.indexOf(F.to) : 1e9;
+  const out = new Int32Array(n); let m = 0;
+  outer: for (let i = 0; i < n; i++) {
+    for (const [v, c] of conds) if (v[i] !== c) continue outer;
+    if ((lo >= 0 || hi < 1e9) && (mv[i] < 0 || mv[i] < lo || mv[i] > hi)) continue;
+    out[m++] = i;
+  }
+  return out.subarray(0, m);
+}
+function sncuIdx() {
+  const T = S, n = T.n, out = new Int32Array(n); let m = 0;
+  const md = T.c.month.d, mv = T.c.month.v;
+  const blk = F.block ? T.c.block.d.indexOf(F.block) : null, bw = F.bw_band ? T.c.bw_band.d.indexOf(F.bw_band) : null, sx = F.sex ? T.c.sex.d.indexOf(F.sex) : null;
+  for (let i = 0; i < n; i++) {
+    const mo = mv[i] < 0 ? null : md[mv[i]];
+    if (F.period === "2024" && (!mo || mo.slice(0, 4) !== "2024")) continue;
+    if (F.period === "2025-26" && (!mo || mo < "2025-01")) continue;
+    if (F.from && (!mo || mo < F.from)) continue;
+    if (F.to && (!mo || mo > F.to)) continue;
+    if (blk !== null && T.c.block.v[i] !== blk) continue;
+    if (bw !== null && T.c.bw_band.v[i] !== bw) continue;
+    if (sx !== null && T.c.sex.v[i] !== sx) continue;
+    out[m++] = i;
+  }
+  return out.subarray(0, m);
+}
+
+// ---------- aggregation ----------
+function zero() { return { births: 0, lb: 0, sb: 0, known: 0, nnd: 0, early: 0, due: 0, pending: 0, unknown: 0 }; }
+let OC = {};
+function addRow(r, i) {
+  const X = B.x, lb = X.lb[i], sb = X.sb[i];
+  r.births += (lb || sb) ? 1 : 0; r.lb += lb; r.sb += sb; r.known += X.known[i]; r.nnd += X.nnd[i]; r.early += X.early[i];
+  if (lb) { const o = B.c.outcome.v[i]; if (o === OC.pending) r.pending++; else { r.due++; if (OC.unknown.has(o)) r.unknown++; } }
+}
+function total(idx) { const r = zero(); for (let j = 0; j < idx.length; j++) addRow(r, idx[j]); return rates(r); }
+function by(idx, key) { // key: categorical column name -> Map(label -> row)
+  const c = B.c[key], m = new Map();
+  for (let j = 0; j < idx.length; j++) { const i = idx[j]; const v = c.v[i]; let r = m.get(v); if (!r) m.set(v, r = zero()); addRow(r, i); }
+  const out = [];
+  for (const [v, r] of m) out.push(Object.assign(rates(r), { key: v < 0 ? null : c.d[v] }));
+  return out;
+}
+function wilson(x, n, z = 1.96) {
+  if (!n) return [NaN, NaN];
+  const p = x / n, d = 1 + z * z / n, c = p + z * z / (2 * n), s = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n));
+  return [Math.max(0, (c - s) / d), (c + s) / d];
+}
+function rates(r) {
+  r.nmr = r.known ? 1000 * r.nnd / r.known : NaN;
+  const [lo, hi] = wilson(r.nnd, r.known); r.lo = 1000 * lo; r.hi = 1000 * hi;
+  r.enmr = r.known ? 1000 * r.early / r.known : NaN;
+  r.sbr = r.births ? 1000 * r.sb / r.births : NaN;
+  r.cov = r.lb ? r.known / r.lb : NaN;
+  r.covDue = r.due ? (r.due - r.unknown) / r.due : NaN;
+  return r;
+}
+
+// ---------- tooltip ----------
+const tip = $("tip");
+function showTip(ev, title, rows) {
+  tip.textContent = "";
+  tip.append(el("div", { class: "t", text: title }));
+  for (const [k, v] of rows) tip.append(el("div", { class: "r" }, el("b", { text: v }), el("span", { class: "muted", text: k })));
+  tip.hidden = false;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+}
+const hideTip = () => { tip.hidden = true; };
+addEventListener("scroll", hideTip, { passive: true });
+
+// ---------- horizontal bars (HTML) ----------
+// rows: [{label, sub, value, lo, hi, dim, tipRows, onClick, active}], opts: {ref, fmt, max}
+function hbars(host, rows, opts = {}) {
+  host.textContent = "";
+  if (!rows.length) { host.append(el("div", { class: "empty", text: "No babies in view." })); return; }
+  const fmt = opts.fmt || f1;
+  const max = opts.max || Math.max(...rows.map(r => Math.max(r.value || 0, isFinite(r.hi) ? r.hi : 0)), opts.ref || 0) * 1.05 || 1;
+  const wrap = el("div", { class: "hbars" });
+  for (const r of rows) {
+    const track = el("div", { class: "track" });
+    const w = Math.max(0, (r.value || 0) / max * 100);
+    track.append(el("div", { class: "fill", style: `width:${w}%` }));
+    if (isFinite(r.lo) && isFinite(r.hi) && r.hi > 0) track.append(el("div", { class: "ci", style: `left:${r.lo / max * 100}%;width:${Math.max(0.5, (r.hi - r.lo) / max * 100)}%` }));
+    if (opts.ref != null && isFinite(opts.ref)) track.append(el("div", { class: "refline", style: `left:${opts.ref / max * 100}%` }));
+    const row = el("div", { class: "hrow" + (r.dim ? " dim" : "") + (r.onClick ? " click" : "") + (r.active ? " active" : ""), tabindex: r.onClick ? 0 : null, role: r.onClick ? "button" : null },
+      el("div", { class: "lab" }, pretty(r.label), r.sub ? el("small", { text: r.sub }) : null), track, el("div", { class: "val", text: fmt(r.value) }));
+    if (r.tipRows) { row.addEventListener("pointermove", e => showTip(e, pretty(r.label), r.tipRows)); row.addEventListener("pointerleave", hideTip);
+      row.addEventListener("focus", () => { const b = row.getBoundingClientRect(); showTip({ clientX: b.right - 40, clientY: b.top }, pretty(r.label), r.tipRows); }); row.addEventListener("blur", hideTip); }
+    if (r.onClick) { row.addEventListener("click", r.onClick); row.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); r.onClick(); } }); }
+    wrap.append(row);
+  }
+  host.append(wrap);
+  if (opts.legend !== false && rows.some(r => isFinite(r.lo))) host.append(el("div", { class: "legend" },
+    el("span", {}, el("span", { class: "key", style: "background:var(--s1)" }), opts.valueName || "NMR per 1,000"),
+    el("span", {}, el("span", { class: "key ci" }), "95% CI"),
+    opts.ref != null ? el("span", {}, el("span", { class: "key line", style: "background:var(--ink-2);width:2px;height:10px" }), `All in view ${fmt(opts.ref)}`) : null));
+}
+function nmrRows(rs, key, { click = true, minKnown = 1 } = {}) {
+  return rs.filter(r => r.lb >= minKnown).map(r => ({
+    label: r.key, value: r.nmr, lo: r.lo, hi: r.hi, sub: `${deaths(r.nnd)} · ${n0(r.lb)} live births`, active: F[key] && F[key] === r.key,
+    dim: r.key == null || r.key === "Unknown" || r.key === "Missing/implausible" || r.key === "Out of district",
+    tipRows: [["NMR per 1,000", f1(r.nmr)], ["95% CI", `${f1(r.lo)}–${f1(r.hi)}`], ["Neonatal deaths", n0(r.nnd)], ["Known live births", n0(r.known)], ["Outcome known", pc(r.cov)]],
+    onClick: click && key in F && r.key != null ? () => setFilter(key, r.key) : null,
+  }));
+}
+
+// ---------- SVG helpers ----------
+const SVGNS = "http://www.w3.org/2000/svg";
+const sv = (tag, a = {}) => { const e = document.createElementNS(SVGNS, tag); for (const [k, v] of Object.entries(a)) e.setAttribute(k, v); return e; };
+function niceMax(v) { if (!(v > 0)) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); for (const m of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * p >= v) return m * p; return 10 * p; }
+const ticks = (max, n = 4) => Array.from({ length: n + 1 }, (_, i) => max * i / n);
+const tickFmt = v => v >= 1000 ? (v / 1000).toFixed(v % 1000 ? 1 : 0) + "K" : (Number.isInteger(v) ? String(v) : v.toFixed(1));
+
+// Line chart over categories (months). series: [{name, color, values[], hollow[]}], refY optional
+function lineChart(host, xs, series, opts = {}) {
+  host.textContent = "";
+  const W = Math.max(280, host.clientWidth || 600), H = opts.height || 220, m = { l: 40, r: 14, t: 12, b: 26 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const all = series.flatMap(s => s.values.filter(isFinite)).concat(opts.refY != null ? [opts.refY] : []);
+  const ymax = opts.ymax || niceMax(Math.max(...all, 0) * 1.08);
+  const x = i => m.l + (xs.length === 1 ? iw / 2 : i * iw / (xs.length - 1)), y = v => m.t + ih - v / ymax * ih;
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.label || "line chart" });
+  const g = sv("g", { class: "grid" });
+  for (const t of ticks(ymax)) { g.append(sv("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t) })); const tx = sv("text", { x: m.l - 6, y: y(t) + 3.5, "text-anchor": "end" }); tx.textContent = opts.yfmt ? opts.yfmt(t) : tickFmt(t); svg.append(tx); }
+  svg.prepend(g);
+  const step = Math.max(1, Math.ceil(xs.length / Math.max(2, Math.floor(iw / 62))));
+  xs.forEach((v, i) => { if (i % step && i !== xs.length - 1) return; const tx = sv("text", { x: x(i), y: H - 8, "text-anchor": "middle" }); tx.textContent = opts.xfmt ? opts.xfmt(v) : v; svg.append(tx); });
+  if (opts.refY != null && isFinite(opts.refY)) svg.append(sv("line", { x1: m.l, x2: W - m.r, y1: y(opts.refY), y2: y(opts.refY), stroke: "var(--ink-2)", "stroke-width": 1, opacity: .7 }));
+  for (const s of series) {
+    let d = "", pen = false;
+    s.values.forEach((v, i) => { if (!isFinite(v)) { pen = false; return; } d += (pen ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1); pen = true; });
+    if (opts.area) svg.append(sv("path", { d: d + `L${x(s.values.length - 1)},${y(0)}L${x(0)},${y(0)}Z`, fill: s.color, opacity: .1 }));
+    svg.append(sv("path", { d, fill: "none", stroke: s.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+    if (xs.length <= 40) s.values.forEach((v, i) => { if (!isFinite(v)) return;
+      const hollow = s.hollow && s.hollow[i];
+      svg.append(sv("circle", { class: "pt", cx: x(i), cy: y(v), r: 4, fill: hollow ? "var(--surface)" : s.color, stroke: hollow ? s.color : "var(--surface)", "stroke-width": 2 })); });
+  }
+  const cross = sv("line", { y1: m.t, y2: m.t + ih, stroke: "var(--ink-2)", "stroke-width": 1, opacity: 0 });
+  svg.append(cross);
+  const hit = sv("rect", { x: m.l, y: m.t, width: iw, height: ih, fill: "transparent" });
+  const pick = ev => { const b = svg.getBoundingClientRect(); const px = (ev.clientX - b.left) * W / b.width; return Math.max(0, Math.min(xs.length - 1, Math.round((px - m.l) / (iw / Math.max(1, xs.length - 1))))); };
+  hit.addEventListener("pointermove", ev => { const i = pick(ev); cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("opacity", .5); showTip(ev, opts.tipTitle ? opts.tipTitle(xs[i], i) : xs[i], opts.tipRows(i)); });
+  hit.addEventListener("pointerleave", () => { cross.setAttribute("opacity", 0); hideTip(); });
+  svg.append(hit);
+  host.append(svg);
+}
+// Columns over categories. values[], color
+function columns(host, xs, values, opts = {}) {
+  host.textContent = "";
+  const W = Math.max(260, host.clientWidth || 500), H = opts.height || 180, m = { l: 40, r: 10, t: 16, b: 26 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b, ymax = opts.ymax || niceMax(Math.max(...values.filter(isFinite), 0) * 1.1);
+  const band = iw / xs.length, bw = Math.min(24, Math.max(2, band - 2));
+  const y = v => m.t + ih - v / ymax * ih;
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.label || "column chart" });
+  const g = sv("g", { class: "grid" }); svg.append(g);
+  for (const t of ticks(ymax)) { g.append(sv("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t) })); const tx = sv("text", { x: m.l - 6, y: y(t) + 3.5, "text-anchor": "end" }); tx.textContent = opts.yfmt ? opts.yfmt(t) : tickFmt(t); svg.append(tx); }
+  const step = Math.max(1, Math.ceil(xs.length / Math.max(2, Math.floor(iw / 58))));
+  xs.forEach((v, i) => {
+    const cx = m.l + band * i + band / 2, val = values[i];
+    if (isFinite(val) && val > 0) {
+      const top = y(val), h = m.t + ih - top, r = Math.min(4, bw / 2, h);
+      const x0 = cx - bw / 2, x1 = cx + bw / 2, base = m.t + ih;
+      svg.append(sv("path", { d: `M${x0},${base}V${top + r}Q${x0},${top} ${x0 + r},${top}H${x1 - r}Q${x1},${top} ${x1},${top + r}V${base}Z`, fill: (opts.colorFn && opts.colorFn(i)) || "var(--s1)" }));
+      if (opts.labels) { const tx = sv("text", { x: cx, y: top - 4, "text-anchor": "middle" }); tx.textContent = opts.labels(i); tx.style.fill = "var(--ink-2)"; svg.append(tx); }
+    }
+    if (!(i % step) || i === xs.length - 1) { const tx = sv("text", { x: cx, y: H - 8, "text-anchor": "middle" }); tx.textContent = opts.xfmt ? opts.xfmt(v) : v; svg.append(tx); }
+    const hit = sv("rect", { x: m.l + band * i, y: m.t, width: band, height: ih, fill: "transparent" });
+    hit.addEventListener("pointermove", ev => showTip(ev, opts.tipTitle ? opts.tipTitle(v) : v, opts.tipRows(i)));
+    hit.addEventListener("pointerleave", hideTip);
+    svg.append(hit);
+  });
+  svg.append(sv("line", { x1: m.l, x2: W - m.r, y1: m.t + ih, y2: m.t + ih, stroke: "var(--line-2)" }));
+  host.append(svg);
+}
+
+// ---------- tables ----------
+function table(tb, cols, rows, opts = {}) {
+  tb.textContent = "";
+  const state = tb._sort || (tb._sort = { k: opts.sort || null, dir: opts.dir || -1 });
+  const draw = () => {
+    tb.textContent = "";
+    const thead = el("thead"), tr = el("tr");
+    for (const c of cols) {
+      const th = el("th", { class: (c.n ? "n " : "") + (c.sort !== false ? "sort" : ""), text: c.label + (state.k === c.k ? (state.dir > 0 ? " ↑" : " ↓") : ""), scope: "col" });
+      if (c.sort !== false) th.addEventListener("click", () => { state.dir = state.k === c.k ? -state.dir : -1; state.k = c.k; draw(); });
+      tr.append(th);
+    }
+    thead.append(tr); tb.append(thead);
+    let rs = rows.slice();
+    if (state.k) { const c = cols.find(c => c.k === state.k); const val = c && (c.sv || c.v); if (val) rs.sort((a, b) => { const x = val(a), y = val(b); if (x == null || (typeof x === "number" && !isFinite(x))) return 1; if (y == null || (typeof y === "number" && !isFinite(y))) return -1; return (x > y ? 1 : x < y ? -1 : 0) * state.dir; }); }
+    const tbody = el("tbody");
+    for (const r of rs.slice(0, opts.limit || 1e9)) {
+      const row = el("tr", { class: (opts.onRow ? "click" : "") + (opts.selected && opts.selected(r) ? " sel" : "") });
+      for (const c of cols) { const v = c.f ? c.f(r) : c.v(r); row.append(el("td", { class: c.n ? "n" : null }, v instanceof Node ? v : String(v ?? ""))); }
+      if (opts.onRow) { row.tabIndex = 0; row.addEventListener("click", () => opts.onRow(r)); row.addEventListener("keydown", e => { if (e.key === "Enter") opts.onRow(r); }); }
+      tbody.append(row);
+    }
+    if (!rs.length) tbody.append(el("tr", {}, el("td", { colspan: cols.length, class: "empty", text: opts.empty || "Nothing in view." })));
+    tb.append(tbody);
+  };
+  draw();
+}
+const nmrCols = (extra = []) => [
+  ...extra,
+  { label: "Live births", k: "lb", n: 1, v: r => r.lb, f: r => n0(r.lb) },
+  { label: "Known", k: "cov", n: 1, v: r => r.cov, f: r => pc(r.cov, 0) },
+  { label: "Deaths", k: "nnd", n: 1, v: r => r.nnd, f: r => n0(r.nnd) },
+  { label: "NMR", k: "nmr", n: 1, v: r => r.nmr, f: r => f1(r.nmr) },
+  { label: "95% CI", k: "ci", n: 1, sort: false, v: r => r.lo, f: r => r.known ? `${f1(r.lo)}–${f1(r.hi)}` : "–" },
+  { label: "Early NMR", k: "enmr", n: 1, v: r => r.enmr, f: r => f1(r.enmr) },
+  { label: "Stillbirths", k: "sb", n: 1, v: r => r.sb, f: r => n0(r.sb) },
+  { label: "SBR", k: "sbr", n: 1, v: r => r.sbr, f: r => f1(r.sbr) },
+];
+const HEAT = ["--h1", "--h2", "--h3", "--h4", "--h5", "--h6", "--h7"];
+function heatCell(v, max) {
+  if (!isFinite(v) || !(max > 0)) return {};
+  const k = Math.min(HEAT.length - 1, Math.floor(v / max * HEAT.length));
+  return { style: `background:var(${HEAT[k]});color:${k >= 3 ? "#fff" : "#0b1a2e"}` };
+}
+
+// ---------- tabs ----------
+const TABS = ["overview", "where", "who", "when", "sncu", "quality", "explore", "ask"];
+let current = "overview";
+function showTab(t) {
+  if (!TABS.includes(t)) t = "overview";
+  current = t;
+  for (const x of TABS) $("t-" + x).hidden = x !== t;
+  for (const a of $("tabs").querySelectorAll("a")) {
+    if (a.getAttribute("href") === "#" + t) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  }
+  render();
+}
+addEventListener("hashchange", () => showTab(location.hash.slice(1)));
+
+let IDX, SIDX;
+function refresh() { syncFilterUI(); IDX = babyIdx(); SIDX = sncuIdx(); render(); }
+function render() { hideTip(); if (!B) return; ({ overview, where, who, when, sncu, quality, explore, ask })[current](); }
+let rz, lastW = 0;
+new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w === lastW) return; lastW = w; clearTimeout(rz); rz = setTimeout(render, 150); }).observe($("main"));
+
+// ---------- overview ----------
+function overview() {
+  const t = total(IDX);
+  $("h-nmr").firstChild.textContent = f1(t.nmr);
+  $("h-ci").textContent = t.known ? `95% CI ${f1(t.lo)}–${f1(t.hi)}` : "";
+  $("h-sub").textContent = `${n0(t.nnd)} neonatal deaths among ${n0(t.known)} live births with a known day-28 outcome.`;
+  const tiles = $("tiles"); tiles.textContent = "";
+  const tile = (label, val, sub) => tiles.append(el("div", { class: "tile" }, el("div", { class: "lab", text: label }), el("div", { class: "val", text: val }), sub ? el("div", { class: "sub", text: sub }) : null));
+  tile("Live births", n0(t.lb), `${n0(t.births)} births in all`);
+  tile("Neonatal deaths", n0(t.nnd), `${n0(t.early)} in the first week`);
+  tile("Early NMR", f1(t.enmr), "deaths 0–6 days per 1,000");
+  tile("Stillbirth rate", f1(t.sbr), `${n0(t.sb)} stillbirths per 1,000 births`);
+  tile("Outcome known", pc(t.covDue), `of ${n0(t.due)} babies due; ${n0(t.pending)} not yet 28 days`);
+  let sn = 0; for (const i of IDX) if (B.x.sncu_n[i] > 0) sn++;
+  tile("Admitted to SNCU", n0(sn), `${pc(sn / t.lb)} of live births (linked)`);
+  findings(t);
+
+  // Period comparison (ignores the period filter)
+  const all = babyIdx(["period"]), pr = by(all, "period"), tot = total(all);
+  const per = k => pr.find(r => r.key === k) || rates(zero());
+  const cols = [["2024", per("2024")], ["2025–26", per("2025-26")], ["Both", tot]];
+  const rowsP = [["Live births", r => n0(r.lb)], ["Neonatal deaths", r => n0(r.nnd)], ["NMR (95% CI)", r => `${f1(r.nmr)} (${f1(r.lo)}–${f1(r.hi)})`], ["Early NMR", r => f1(r.enmr)], ["Stillbirth rate", r => f1(r.sbr)], ["Outcome known (due)", r => pc(r.covDue)]];
+  const tb = $("period-table"); tb.textContent = "";
+  tb.append(el("thead", {}, el("tr", {}, el("th", { text: "" }), cols.map(([k]) => el("th", { class: "n", text: k })))));
+  tb.append(el("tbody", {}, rowsP.map(([lab, f]) => el("tr", {}, el("td", { text: lab }), cols.map(([, r]) => el("td", { class: "n", text: f(r) }))))));
+
+  // Trend
+  const gran = store.get("sankalp.gran") || "m";
+  for (const b of $("trend-gran").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.v === gran);
+  const key = gran === "q" ? "quarter" : "month";
+  const rows = by(IDX, key).filter(r => r.key).sort((a, b) => a.key < b.key ? -1 : 1);
+  const xs = rows.map(r => r.key), fx = gran === "q" ? (v => v.replace("-", " ")) : mshort;
+  lineChart($("trend"), xs, [{ name: "NMR", color: "var(--s1)", values: rows.map(r => r.cov >= .5 ? r.nmr : NaN), hollow: rows.map(r => r.cov < .85) }], {
+    refY: t.nmr, xfmt: fx, label: "NMR by month of birth", tipTitle: v => gran === "q" ? v.replace("-", " ") : mlab(v),
+    tipRows: i => { const r = rows[i]; return [["NMR per 1,000", f1(r.nmr)], ["95% CI", `${f1(r.lo)}–${f1(r.hi)}`], ["Deaths", n0(r.nnd)], ["Known live births", n0(r.known)], ["Outcome known", pc(r.cov)]]; } });
+  table($("trend-table"), [{ label: gran === "q" ? "Quarter" : "Month", k: "key", v: r => r.key, f: r => gran === "q" ? r.key : mlab(r.key) }, ...nmrCols()], rows, { sort: "key", dir: 1 });
+  const tr = i => { const r = rows[i]; return [["Live births", n0(r.lb)], ["Neonatal deaths", n0(r.nnd)], ["Outcome known", pc(r.cov)]]; };
+  columns($("sm-births"), xs, rows.map(r => r.lb), { xfmt: fx, tipRows: tr, tipTitle: v => gran === "q" ? v : mlab(v), height: 160 });
+  columns($("sm-deaths"), xs, rows.map(r => r.nnd), { xfmt: fx, tipRows: tr, tipTitle: v => gran === "q" ? v : mlab(v), height: 160 });
+  lineChart($("sm-cov"), xs, [{ name: "Known", color: "var(--s1)", values: rows.map(r => 100 * r.cov) }], { ymax: 100, height: 160, xfmt: fx, yfmt: v => v + "%", area: true, tipTitle: v => gran === "q" ? v : mlab(v), tipRows: tr });
+}
+$("trend-gran").addEventListener("click", e => { const v = e.target.dataset && e.target.dataset.v; if (v) { store.set("sankalp.gran", v); render(); } });
+
+function findings(t) {
+  const ul = $("findings"); ul.textContent = "";
+  const li = (...parts) => ul.append(el("li", {}, ...parts));
+  if (!t.known) { li("No babies with a known outcome in view."); return; }
+  const ages = by(IDX, "death_age"); const d01 = ages.filter(r => r.key === "Day 0" || r.key === "Day 1").reduce((a, r) => a + r.nnd, 0);
+  li(el("b", { text: pc(d01 / t.nnd, 0) }), " of neonatal deaths happened on the day of birth or the day after (", n0(d01), " of ", n0(t.nnd), ").");
+  const bw = by(IDX, "bw_band"); const valid = bw.filter(r => r.key !== "Missing/implausible");
+  const low = valid.filter(r => ["<1000 g", "1000-1499 g", "1500-1999 g", "2000-2499 g"].includes(r.key));
+  const vlb = valid.reduce((a, r) => a + r.lb, 0), vd = valid.reduce((a, r) => a + r.nnd, 0);
+  const llb = low.reduce((a, r) => a + r.lb, 0), ld = low.reduce((a, r) => a + r.nnd, 0);
+  const vlbw = valid.filter(r => ["<1000 g", "1000-1499 g"].includes(r.key)); const vl = vlbw.reduce((a, r) => a + r.lb, 0), vdd = vlbw.reduce((a, r) => a + r.nnd, 0);
+  if (vlb && vd) li("Babies under 2,500 g were ", el("b", { text: pc(llb / vlb, 0) }), " of live births but ", el("b", { text: pc(ld / vd, 0) }), " of deaths. Under 1,500 g: ", pc(vl / vlb, 1), " of births, ", pc(vdd / vd, 0), " of deaths.");
+  const dp = by(IDX, "death_place").filter(r => r.key); const dtot = dp.reduce((a, r) => a + r.nnd, 0);
+  const comm = dp.filter(r => r.key === "Home" || r.key === "On the way").reduce((a, r) => a + r.nnd, 0);
+  if (dtot) li(el("b", { text: pc(comm / dtot, 0) }), " of deaths with a recorded place happened at home or on the way to a facility.");
+  const bl = by(IDX, "block").filter(r => r.key && r.key !== "Unknown" && r.key !== "Out of district" && r.known >= 500).sort((a, b) => b.nmr - a.nmr);
+  if (bl.length > 1) { const hi = bl[0], lo = bl[bl.length - 1];
+    li("Highest block NMR: ", el("b", { text: `${hi.key} ${f1(hi.nmr)}` }), ` (95% CI ${f1(hi.lo)}–${f1(hi.hi)}); lowest: ${lo.key} ${f1(lo.nmr)} (${f1(lo.lo)}–${f1(lo.hi)}).`); }
+  if (t.unknown) li(el("b", { text: n0(t.unknown) }), ` babies (${pc(t.unknown / t.due)}) are past day 28 with no known outcome: see Data quality.`);
+}
+
+// ---------- where ----------
+function where() {
+  const t = total(IDX);
+  const bl = by(IDX, "block").sort((a, b) => { const r = x => (x.key === "Unknown" ? 2 : x.key === "Out of district" ? 1 : 0); return r(a) - r(b) || b.nmr - a.nmr; });
+  hbars($("w-block"), nmrRows(bl, "block"), { ref: t.nmr });
+  const pl = by(IDX, "place").sort((a, b) => ORDER.place.indexOf(a.key) - ORDER.place.indexOf(b.key));
+  hbars($("w-place"), nmrRows(pl, "place"), { ref: t.nmr });
+  const dp = by(IDX, "death_place").filter(r => r.key && r.nnd).sort((a, b) => b.nnd - a.nnd); const dt = dp.reduce((a, r) => a + r.nnd, 0);
+  hbars($("w-dplace"), dp.map(r => ({ label: r.key, value: 100 * r.nnd / dt, sub: deaths(r.nnd), tipRows: [["Share of deaths", pc(r.nnd / dt)], ["Deaths", n0(r.nnd)]] })), { fmt: v => f1(v) + "%", max: 100, legend: false });
+  table($("w-block-table"), nmrCols([{ label: "Block", k: "key", v: r => r.key, f: r => pretty(r.key) }]), bl, { sort: "nmr", onRow: r => r.key && setFilter("block", r.key), selected: r => F.block === r.key });
+  const fac = by(IDX, "facility").filter(r => r.key && r.lb >= 100);
+  table($("w-fac"), [{ label: "Facility", k: "key", v: r => r.key },
+    { label: "Live births", k: "lb", n: 1, v: r => r.lb, f: r => n0(r.lb) }, { label: "Deaths", k: "nnd", n: 1, v: r => r.nnd, f: r => n0(r.nnd) },
+    { label: "NMR", k: "nmr", n: 1, v: r => r.nmr, f: r => f1(r.nmr) }, { label: "95% CI", k: "ci", n: 1, sort: false, v: r => r.lo, f: r => `${f1(r.lo)}–${f1(r.hi)}` },
+    { label: "SBR", k: "sbr", n: 1, v: r => r.sbr, f: r => f1(r.sbr) }], fac, { sort: "lb", onRow: r => setFilter("facility", r.key), selected: r => F.facility === r.key });
+  const m = new Map(); const dfc = B.c.death_facility, dpc = B.c.death_place;
+  for (const i of IDX) if (B.x.nnd[i]) { const p = lab(B, "death_place", i); if (p !== "Public facility" && p !== "Private facility" && p !== "Outside district") continue; const f = dfc.v[i] < 0 ? "(facility not named)" : dfc.d[dfc.v[i]]; const k = f + "\u0000" + p; m.set(k, (m.get(k) || 0) + 1); }
+  const drows = [...m].map(([k, n]) => { const [f, p] = k.split("\u0000"); return { f, p, n }; });
+  const dsum = drows.reduce((a, r) => a + r.n, 0);
+  table($("w-dfac"), [{ label: "Facility", k: "f", v: r => r.f }, { label: "Type", k: "p", v: r => r.p }, { label: "Deaths", k: "n", n: 1, v: r => r.n, f: r => n0(r.n) }, { label: "Share", k: "s", n: 1, v: r => r.n, f: r => pc(r.n / dsum, 0) }], drows, { sort: "n", limit: 25 });
+}
+
+// ---------- who ----------
+const WHO = ["bw_band", "ga_band", "sex", "plurality", "born_cond", "sncu_adm", "delivery", "preterm", "caste", "religion", "res_type", "place"];
+function who() {
+  const t = total(IDX), grid = $("who-grid"); grid.textContent = "";
+  for (const k of WHO) {
+    let rs = by(IDX, k).filter(r => r.key != null || r.lb > 0);
+    if (k === "delivery" || k === "caste" || k === "religion" || k === "res_type" || k === "born_cond") rs = rs.filter(r => r.key != null);
+    if (!rs.length) continue;
+    rs = ORDER[k] ? rs.sort((a, b) => (ORDER[k].indexOf(a.key) + 1 || 99) - (ORDER[k].indexOf(b.key) + 1 || 99)) : rs.sort((a, b) => b.lb - a.lb);
+    const tl = rs.reduce((a, r) => a + r.lb, 0), td = rs.reduce((a, r) => a + r.nnd, 0);
+    const host = el("div");
+    const panel = el("div", { class: "panel" }, el("header", {}, el("h3", { text: DIMS[k] })), host);
+    grid.append(panel);
+    const shown = rs.filter(r => r.known >= 20), hiddenN = rs.length - shown.length;
+    hbars(host, nmrRows(shown, k).map((r, j) => Object.assign(r, { sub: `${pc(shown[j].lb / tl, 1)} of live births · ${pc(shown[j].nnd / td, 0)} of deaths` })), { ref: t.nmr, legend: k === WHO[0] });
+    if (hiddenN) host.append(el("p", { class: "note", text: `${hiddenN} group${hiddenN > 1 ? "s" : ""} with fewer than 20 known live births not shown.` }));
+  }
+}
+
+// ---------- when & why ----------
+function when() {
+  const counts = new Array(28).fill(0); let unk = 0, tot = 0;
+  for (const i of IDX) if (B.x.nnd[i]) { tot++; const a = B.x.age_death[i]; if (isFinite(a) && a >= 0 && a <= 27) counts[a]++; else unk++; }
+  const xs = counts.map((_, d) => String(d));
+  columns($("wh-age"), xs, counts, { label: "Deaths by day of life", tipTitle: v => `Day ${v}`, tipRows: i => [["Deaths", n0(counts[i])], ["Share of deaths", pc(counts[i] / tot)]], xfmt: v => v, labels: i => i === 0 && counts[i] ? `${pc(counts[i] / tot, 0)} on day 0` : "" });
+  let c = 0; const cum = counts.map(v => (c += v, tot ? 100 * c / tot : NaN));
+  lineChart($("wh-cum"), xs, [{ name: "Cumulative", color: "var(--s1)", values: cum }], { ymax: 100, yfmt: v => v + "%", area: true, tipTitle: v => `By day ${v}`, tipRows: i => [["Share of deaths", f1(cum[i]) + "%"], ["Deaths so far", n0(counts.slice(0, i + 1).reduce((a, b) => a + b, 0))]] });
+  if (unk) $("wh-age").append(el("p", { class: "note", text: `${n0(unk)} deaths with no usable date of death are not shown.` }));
+  // factors (2025-26)
+  const p25 = B.c.period.d.indexOf("2025-26"); let d25 = 0; const fc = new Array(D.factors.length).fill(0);
+  for (const i of IDX) if (B.x.nnd[i] && B.c.period.v[i] === p25) { d25++; const bits = B.x.factors[i]; for (let b = 0; b < fc.length; b++) if (bits & (1 << b)) fc[b]++; }
+  const fr = D.factors.map((f, b) => ({ label: f, value: d25 ? 100 * fc[b] / d25 : 0, n: fc[b] })).filter(r => r.n).sort((a, b) => b.value - a.value);
+  hbars($("wh-fac"), fr.map(r => ({ label: r.label, value: r.value, sub: deaths(r.n), dim: r.label === "Unknown" || r.label === "Other", tipRows: [["Share of deaths", f1(r.value) + "%"], ["Deaths", n0(r.n)], ["Deaths in 2025–26 in view", n0(d25)]] })), { fmt: v => f1(v) + "%", max: 100, legend: false });
+  if (!d25) $("wh-fac").textContent = "No 2025–26 deaths in view.";
+  // SNCU cause for cohort deaths
+  const cm = new Map(); let cn = 0;
+  for (const i of IDX) if (B.x.nnd[i] && B.c.sncu_cod.v[i] >= 0) { cn++; const k = B.c.sncu_cod.d[B.c.sncu_cod.v[i]]; cm.set(k, (cm.get(k) || 0) + 1); }
+  hbars($("wh-cod"), [...cm].sort((a, b) => b[1] - a[1]).map(([k, n]) => ({ label: k, value: 100 * n / cn, sub: deaths(n), tipRows: [["Share", pc(n / cn)], ["Deaths", n0(n)]] })), { fmt: v => f1(v) + "%", max: 100, legend: false });
+  if (!cn) $("wh-cod").textContent = "No linked SNCU deaths in view.";
+  // place x age
+  const ages = ORDER.death_age, places = ORDER.death_place.concat(["(not recorded)"]);
+  const xt = {}; for (const p of places) xt[p] = Object.fromEntries(ages.map(a => [a, 0]));
+  for (const i of IDX) if (B.x.nnd[i]) { const p = lab(B, "death_place", i) || "(not recorded)"; const a = lab(B, "death_age", i) || "Age unknown"; if (xt[p]) xt[p][a]++; }
+  const tb = $("wh-xt"); tb.textContent = ""; const mx = Math.max(1, ...places.flatMap(p => ages.map(a => xt[p][a])));
+  tb.append(el("thead", {}, el("tr", {}, el("th", { text: "Place of death" }), ages.map(a => el("th", { class: "n", text: pretty(a) })), el("th", { class: "n", text: "All" }))));
+  tb.append(el("tbody", {}, places.filter(p => ages.some(a => xt[p][a])).map(p => el("tr", {}, el("td", { text: p }),
+    ages.map(a => el("td", Object.assign({ class: "cell" }, heatCell(xt[p][a], mx)), xt[p][a] ? n0(xt[p][a]) : "·")),
+    el("td", { class: "n", text: n0(ages.reduce((s, a) => s + xt[p][a], 0)) })))));
+}
+
+// ---------- SNCU ----------
+function sncu() {
+  const X = S.x, oc = S.c.outcome, idx = SIDX;
+  const code = l => oc.d.indexOf(l);
+  const E = code("EXPIRED"), L = code("LAMA"), R = code("REFERRED");
+  const agg = (keyFn) => { const m = new Map(); for (const i of idx) { const k = keyFn(i); let r = m.get(k); if (!r) m.set(k, r = { n: 0, d: 0, lama: 0, ref: 0, los: [] }); r.n++; const o = oc.v[i]; if (o === E) r.d++; if (o === L) r.lama++; if (o === R) r.ref++; } return m; };
+  const all = agg(() => "all").get("all") || { n: 0, d: 0, lama: 0, ref: 0 };
+  const los = []; let linked = 0; for (const i of idx) { if (isFinite(X.los[i])) los.push(X.los[i]); if (X.link_tier[i] > 0) linked++; }
+  los.sort((a, b) => a - b);
+  const tiles = $("s-tiles"); tiles.textContent = "";
+  const tile = (label, val, sub) => tiles.append(el("div", { class: "tile" }, el("div", { class: "lab", text: label }), el("div", { class: "val", text: val }), sub ? el("div", { class: "sub", text: sub }) : null));
+  tile("Admissions", n0(all.n)); tile("Deaths", n0(all.d), `case fatality ${pc(all.d / all.n)}`);
+  tile("Left against advice", n0(all.lama), pc(all.lama / all.n)); tile("Referred out", n0(all.ref), pc(all.ref / all.n));
+  tile("Median stay", los.length ? `${los[Math.floor(los.length / 2)]} days` : "–"); tile("Found in cohort", pc(linked / all.n, 0), `${n0(linked)} admissions linked`);
+  const mrows = [...agg(i => lab(S, "month", i))].filter(([k]) => k).sort((a, b) => a[0] < b[0] ? -1 : 1);
+  const xs = mrows.map(r => r[0]);
+  columns($("s-adm"), xs, mrows.map(r => r[1].n), { xfmt: mshort, tipTitle: mlab, tipRows: i => [["Admissions", n0(mrows[i][1].n)], ["Deaths", n0(mrows[i][1].d)]] });
+  lineChart($("s-cfr"), xs, [{ name: "CFR", color: "var(--s1)", values: mrows.map(r => 100 * r[1].d / r[1].n) }], { xfmt: mshort, yfmt: v => v + "%", refY: 100 * all.d / all.n, tipTitle: mlab, tipRows: i => [["Case fatality", pc(mrows[i][1].d / mrows[i][1].n)], ["Deaths", n0(mrows[i][1].d)], ["Admissions", n0(mrows[i][1].n)]] });
+  const cfrBars = (host, key, order, sortByN) => {
+    let rs = [...agg(i => lab(S, key, i))].filter(([k]) => k != null);
+    rs = order ? rs.sort((a, b) => (order.indexOf(a[0]) + 1 || 99) - (order.indexOf(b[0]) + 1 || 99)) : rs.sort((a, b) => b[1].n - a[1].n);
+    hbars(host, rs.map(([k, r]) => { const [lo, hi] = wilson(r.d, r.n); return { label: k, value: 100 * r.d / r.n, lo: 100 * lo, hi: 100 * hi, sub: `${deaths(r.d)} · ${n0(r.n)} admissions`, dim: k === "Missing/implausible",
+      tipRows: [["Case fatality", pc(r.d / r.n)], ["95% CI", `${f1(100 * lo)}–${f1(100 * hi)}%`], ["Deaths", n0(r.d)], ["Admissions", n0(r.n)]] }; }), { fmt: v => f1(v) + "%", ref: 100 * all.d / all.n, valueName: "Case fatality %" });
+  };
+  cfrBars($("s-bw"), "bw_band", ORDER.bw_band); cfrBars($("s-ga"), "ga_band", ORDER.ga_band); cfrBars($("s-type"), "type");
+  const ind = [...agg(i => lab(S, "indication", i))].filter(([k]) => k).map(([k, r]) => ({ k, ...r }));
+  table($("s-ind"), [{ label: "Reason", k: "k", v: r => r.k }, { label: "Admissions", k: "n", n: 1, v: r => r.n, f: r => n0(r.n) }, { label: "Deaths", k: "d", n: 1, v: r => r.d, f: r => n0(r.d) }, { label: "CFR", k: "cfr", n: 1, v: r => r.d / r.n, f: r => pc(r.d / r.n) }], ind, { sort: "n", limit: 10 });
+  const cod = new Map(); for (const i of idx) if (oc.v[i] === E) { const k = lab(S, "cod", i) || "(not recorded)"; cod.set(k, (cod.get(k) || 0) + 1); }
+  hbars($("s-cod"), [...cod].sort((a, b) => b[1] - a[1]).map(([k, n]) => ({ label: k, value: 100 * n / all.d, sub: deaths(n), tipRows: [["Share", pc(n / all.d)], ["Deaths", n0(n)]] })), { fmt: v => f1(v) + "%", max: 100, legend: false });
+  // after SNCU
+  const outs = ["Alive", "Died", "Died after day 27", "Stillbirth", "Unknown", "Pending"], so = ORDER.sncu_outcome;
+  const xt = {}; for (const s of so) xt[s] = Object.fromEntries(outs.map(o => [o, 0]));
+  for (const i of idx) { const b = X.baby[i]; if (!isFinite(b)) continue; let o = lab(B, "outcome", b); o = o.startsWith("Unknown") ? "Unknown" : o.startsWith("Pending") ? "Pending" : o; const s = lab(S, "outcome", i); if (xt[s]) xt[s][o]++; }
+  const tb = $("s-after"); tb.textContent = "";
+  tb.append(el("thead", {}, el("tr", {}, el("th", { text: "SNCU outcome" }), outs.map(o => el("th", { class: "n", text: o })))));
+  tb.append(el("tbody", {}, so.filter(s => outs.some(o => xt[s][o])).map(s => el("tr", {}, el("td", { text: s.charAt(0) + s.slice(1).toLowerCase() }), outs.map(o => el("td", { class: "n" }, (o === "Died" && s !== "EXPIRED" && xt[s][o]) ? el("b", { text: n0(xt[s][o]) }) : n0(xt[s][o])))))));
+  // link by block
+  const lk = new Map(); for (const i of idx) { const k = lab(S, "block", i); let r = lk.get(k); if (!r) lk.set(k, r = { n: 0, l: 0 }); r.n++; if (X.link_tier[i] > 0) r.l++; }
+  hbars($("s-link"), [...lk].sort((a, b) => b[1].l / b[1].n - a[1].l / a[1].n).map(([k, r]) => ({ label: k, value: 100 * r.l / r.n, sub: `${n0(r.l)} of ${n0(r.n)} admissions`, dim: k === "Out of district" || k === "Unknown", tipRows: [["Found in cohort", pc(r.l / r.n)], ["Admissions", n0(r.n)]] })), { fmt: v => f1(v) + "%", max: 100, legend: false });
+}
+
+// ---------- data quality ----------
+let QSEV = "", QSEL = null, DL = null;
+function quality() {
+  const flags = D.baby_flags, per = B.c.period, pd = per.d;
+  const cnt = flags.map(() => pd.map(() => 0)), base = pd.map(() => 0);
+  let crit = 0, anyCritMask = 0; flags.forEach((f, b) => { if (f.severity === "critical") anyCritMask |= (1 << b); });
+  for (const i of IDX) { const fl = B.x.flags[i], p = per.v[i]; base[p]++; if (fl & anyCritMask) crit++; if (!fl) continue; for (let b = 0; b < flags.length; b++) if (fl & (1 << b)) cnt[b][p]++; }
+  const t = total(IDX), dupB = flags.findIndex(f => f.code === "DUPLICATE_SUSPECT");
+  const tiles = $("q-tiles"); tiles.textContent = "";
+  const tile = (label, val, sub) => tiles.append(el("div", { class: "tile" }, el("div", { class: "lab", text: label }), el("div", { class: "val", text: val }), sub ? el("div", { class: "sub", text: sub }) : null));
+  tile("Records with a critical issue", n0(crit), pc(crit / IDX.length) + " of babies in view");
+  tile("Outcome unknown after day 28", n0(t.unknown), pc(t.unknown / t.due) + " of babies due");
+  tile("Possible duplicates", n0(cnt[dupB].reduce((a, b) => a + b, 0)), "babies in a suspected duplicate pair");
+  let snc = 0; const sNot = D.sncu_flags.findIndex(f => f.code === "S_NOT_IN_COHORT"); for (const i of SIDX) if (S.x.flags[i] & (1 << sNot)) snc++;
+  tile("SNCU admissions not in cohort", n0(snc), "district residents born in the cohort period");
+  for (const b of $("q-sevf").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.v === QSEV);
+  const rows = flags.map((f, b) => ({ ...f, b, c: cnt[b], tot: cnt[b].reduce((a, x) => a + x, 0) })).filter(r => r.tot && (!QSEV || r.severity === QSEV));
+  const sevRank = { critical: 0, major: 1, minor: 2 };
+  table($("q-table"), [
+    { label: "Severity", k: "sev", v: r => sevRank[r.severity], f: r => el("span", { class: "sev " + r.severity, text: r.severity }) },
+    { label: "Check", k: "label", v: r => r.label, f: r => el("div", {}, el("div", { text: r.label }), r.help ? el("div", { class: "note", text: r.help }) : null) },
+    ...pd.map((p, j) => ({ label: p === "2025-26" ? "2025–26" : p, k: "p" + j, n: 1, v: r => r.c[j], f: r => n0(r.c[j]) })),
+    { label: "Share", k: "share", n: 1, v: r => r.tot / IDX.length, f: r => pc(r.tot / IDX.length) },
+  ], rows, { sort: "sev", dir: 1, onRow: r => { QSEL = { kind: "baby", b: r.b }; qlist(); }, selected: r => QSEL && QSEL.kind === "baby" && QSEL.b === r.b });
+  // completeness by block (due babies)
+  const m = new Map(); const O = B.c.outcome;
+  for (const i of IDX) { if (!B.x.lb[i]) continue; const o = O.v[i]; if (o === OC.pending) continue; const k = lab(B, "block", i); let r = m.get(k); if (!r) m.set(k, r = { k, due: 0, known: 0, nr: 0, nf: 0, nk: 0 }); r.due++; const ol = O.d[o];
+    if (B.x.known[i]) r.known++; else if (ol === "Unknown - not reachable") r.nr++; else if (ol === "Unknown - not followed up") r.nf++; else if (ol === "Unknown - not known") r.nk++; }
+  table($("q-block"), [{ label: "Block", k: "k", v: r => r.k || "" }, { label: "Due", k: "due", n: 1, v: r => r.due, f: r => n0(r.due) }, { label: "Known", k: "kn", n: 1, v: r => r.known / r.due, f: r => pc(r.known / r.due) },
+    { label: "Not reachable", k: "nr", n: 1, v: r => r.nr, f: r => n0(r.nr) }, { label: "Not followed up", k: "nf", n: 1, v: r => r.nf, f: r => n0(r.nf) }, { label: "Not known", k: "nk", n: 1, v: r => r.nk, f: r => n0(r.nk) }], [...m.values()], { sort: "kn", dir: 1 });
+  // by registering staff
+  const sm = new Map(); const ST = B.c.reg_staff;
+  const bit = c => 1 << flags.findIndex(f => f.code === c);
+  for (const i of IDX) { const k = ST.v[i] < 0 ? "(not recorded)" : ST.d[ST.v[i]]; let r = sm.get(k); if (!r) sm.set(k, r = { k, n: 0, crit: 0, unk: 0, dup: 0, bw: 0, ga: 0 }); const fl = B.x.flags[i]; r.n++;
+    if (fl & anyCritMask) r.crit++; if (fl & bit("OUTCOME_UNKNOWN")) r.unk++; if (fl & bit("DUPLICATE_SUSPECT")) r.dup++; if (fl & (bit("BW_MISSING") | bit("BW_IMPLAUSIBLE"))) r.bw++; if (fl & (bit("GA_MISSING") | bit("GA_IMPLAUSIBLE"))) r.ga++; }
+  table($("q-staff"), [{ label: "Staff", k: "k", v: r => r.k, f: r => el("span", { class: "mono", text: r.k }) }, { label: "Records", k: "n", n: 1, v: r => r.n, f: r => n0(r.n) },
+    { label: "Critical", k: "crit", n: 1, v: r => r.crit / r.n, f: r => pc(r.crit / r.n) }, { label: "Outcome unknown", k: "unk", n: 1, v: r => r.unk / r.n, f: r => pc(r.unk / r.n) },
+    { label: "Duplicate?", k: "dup", n: 1, v: r => r.dup / r.n, f: r => pc(r.dup / r.n) }, { label: "Weight issue", k: "bw", n: 1, v: r => r.bw / r.n, f: r => pc(r.bw / r.n) }, { label: "Gestation issue", k: "ga", n: 1, v: r => r.ga / r.n, f: r => pc(r.ga / r.n) }],
+    [...sm.values()].filter(r => r.n >= 50), { sort: "crit" });
+  // SNCU checks
+  const sf = D.sncu_flags, sc = sf.map(() => 0);
+  for (const i of SIDX) { const fl = S.x.flags[i]; if (fl) for (let b = 0; b < sf.length; b++) if (fl & (1 << b)) sc[b]++; }
+  table($("q-stable"), [{ label: "Severity", k: "sev", v: r => sevRank[r.severity], f: r => el("span", { class: "sev " + r.severity, text: r.severity }) },
+    { label: "Check", k: "label", v: r => r.label, f: r => el("div", {}, el("div", { text: r.label }), r.help ? el("div", { class: "note", text: r.help }) : null) },
+    { label: "Admissions", k: "n", n: 1, v: r => r.n, f: r => n0(r.n) }, { label: "Share", k: "s", n: 1, v: r => r.n / SIDX.length, f: r => pc(r.n / SIDX.length) }],
+    sf.map((f, b) => ({ ...f, b, n: sc[b] })).filter(r => r.n && (!QSEV || r.severity === QSEV)), { sort: "sev", dir: 1, onRow: r => { QSEL = { kind: "sncu", b: r.b }; qlist(); }, selected: r => QSEL && QSEL.kind === "sncu" && QSEL.b === r.b });
+  if (QSEL) qlist(); else $("q-list-panel").hidden = true;
+}
+$("q-sevf").addEventListener("click", e => { const v = e.target.dataset && e.target.dataset.v; if (v != null) { QSEV = v; render(); } });
+$("q-close").addEventListener("click", () => { QSEL = null; render(); });
+let QROWS = [];
+function qlist() {
+  const panel = $("q-list-panel"); panel.hidden = false; $("q-copy-fallback").hidden = true;
+  const isB = QSEL.kind === "baby", T = isB ? B : S, defs = isB ? D.baby_flags : D.sncu_flags, f = defs[QSEL.b], bit = 1 << QSEL.b;
+  const idx = isB ? IDX : SIDX; QROWS = [];
+  const names = fl => defs.filter((_, b) => fl & (1 << b)).map(d => d.code);
+  for (const i of idx) if (T.x.flags[i] & bit) QROWS.push(isB ? {
+    id: T.s.rid[i], period: lab(B, "period", i), baby: T.x.bn[i], month: lab(B, "month", i), block: lab(B, "block", i), place: lab(B, "place", i), outcome: lab(B, "outcome", i), flags: names(T.x.flags[i]) } : {
+    id: T.s.aid[i], month: lab(S, "month", i), block: lab(S, "block", i), outcome: lab(S, "outcome", i), cohort: isFinite(T.x.baby[i]) ? `${lab(B, "period", T.x.baby[i])} · ${B.s.rid[T.x.baby[i]]}` : "", cohort_outcome: isFinite(T.x.baby[i]) ? lab(B, "outcome", T.x.baby[i]) : "", flags: names(T.x.flags[i]) });
+  $("q-list-title").textContent = f.label;
+  $("q-list-sub").textContent = `${n0(QROWS.length)} ${isB ? "babies" : "admissions"} in view` + (QROWS.length > 300 ? " · showing the first 300; save as CSV for all" : "");
+  const tags = r => el("span", {}, r.flags.map(c => el("span", { class: "flagtag", text: c })));
+  const cols = isB ? [{ label: "Period", k: "period", v: r => r.period }, { label: "Record ID", k: "id", v: r => r.id, f: r => el("span", { class: "mono", text: r.id }) }, { label: "Baby", k: "baby", n: 1, v: r => r.baby },
+      { label: "Born", k: "month", v: r => r.month, f: r => mlab(r.month) }, { label: "Block", k: "block", v: r => r.block }, { label: "Place of birth", k: "place", v: r => r.place }, { label: "Outcome", k: "outcome", v: r => r.outcome }, { label: "All issues", k: "flags", sort: false, v: r => r.flags.join(" "), f: tags }]
+    : [{ label: "Admission ID", k: "id", v: r => r.id, f: r => el("span", { class: "mono", text: r.id }) }, { label: "Admitted", k: "month", v: r => r.month, f: r => mlab(r.month) }, { label: "Block", k: "block", v: r => r.block }, { label: "SNCU outcome", k: "outcome", v: r => r.outcome },
+      { label: "Cohort record", k: "cohort", v: r => r.cohort, f: r => el("span", { class: "mono", text: r.cohort }) }, { label: "Cohort outcome", k: "co", v: r => r.cohort_outcome }, { label: "All issues", k: "flags", sort: false, v: r => r.flags.join(" "), f: tags }];
+  $("q-list")._sort = null;
+  table($("q-list"), cols, QROWS, { limit: 300 });
+  $("q-csv").hidden = !DL;
+}
+function csv(rows) {
+  if (!rows.length) return "";
+  const keys = Object.keys(rows[0]), q = v => { const s = Array.isArray(v) ? v.join(" ") : (v ?? "") + ""; return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  return [keys.join(","), ...rows.map(r => keys.map(k => q(r[k])).join(","))].join("\n");
+}
+$("q-csv").addEventListener("click", async () => {
+  const f = (QSEL.kind === "baby" ? D.baby_flags : D.sncu_flags)[QSEL.b];
+  try { await DL.save({ filename: `sankalp_${f.code.toLowerCase()}.csv`, data: csv(QROWS) }); }
+  catch (e) { if (e && e.code !== "declined") $("q-list-sub").textContent = "Saving is not available here. Use Copy Record IDs instead."; }
+});
+$("q-copy").addEventListener("click", () => {
+  const txt = QROWS.map(r => r.period ? `${r.period}\t${r.id}\t${r.baby}` : r.id).join("\n");
+  const fb = () => { const ta = $("q-copy-fallback"); ta.hidden = false; ta.value = txt; ta.focus(); ta.select(); };
+  try { navigator.clipboard.writeText(txt).then(() => { $("q-copy").textContent = "Copied"; setTimeout(() => $("q-copy").textContent = "Copy Record IDs", 1500); }, fb); } catch { fb(); }
+});
+
+// ---------- cross-tab ----------
+function explore() {
+  const rs = $("x-rows"), cs = $("x-cols"), ms = $("x-metric");
+  if (!rs.options.length) {
+    for (const [k, v] of Object.entries(DIMS)) { rs.append(el("option", { value: k, text: v })); cs.append(el("option", { value: k, text: v })); }
+    const saved = store.get("sankalp.xtab") || {}; rs.value = saved.r || "block"; cs.value = saved.c || "bw_band"; ms.value = saved.m || "nmr";
+    for (const s of [rs, cs, ms]) s.addEventListener("change", () => { store.set("sankalp.xtab", { r: rs.value, c: cs.value, m: ms.value }); explore(); });
+  }
+  const rk = rs.value, ck = cs.value, metric = ms.value, R = B.c[rk], Cc = B.c[ck];
+  const cells = new Map(), ra = new Set(), cb = new Set();
+  for (const i of IDX) { const a = R.v[i], b = Cc.v[i]; ra.add(a); cb.add(b); const k = a + "|" + b; let r = cells.get(k); if (!r) cells.set(k, r = zero()); addRow(r, i); }
+  const name = (c, v) => v < 0 ? null : c.d[v];
+  const rowsK = ordered(rk, [...ra].map(a => name(R, a))), colsK = ordered(ck, [...cb].map(b => name(Cc, b)));
+  const get = (a, b) => { const r = cells.get((a == null ? -1 : R.d.indexOf(a)) + "|" + (b == null ? -1 : Cc.d.indexOf(b))); return r ? rates(Object.assign({}, r)) : null; };
+  const val = r => !r ? NaN : metric === "nmr" ? r.nmr : metric === "deaths" ? r.nnd : metric === "lb" ? r.lb : metric === "sbr" ? r.sbr : 100 * r.cov;
+  const fmtv = r => !r ? "·" : metric === "nmr" || metric === "sbr" ? f1(val(r)) : metric === "cov" ? f1(val(r)) + "%" : n0(val(r));
+  let mx = 0; for (const a of rowsK) for (const b of colsK) { const r = get(a, b); if (r && (metric !== "nmr" || r.known >= 30)) mx = Math.max(mx, val(r) || 0); }
+  const tb = $("x-table"); tb.textContent = "";
+  tb.append(el("thead", {}, el("tr", {}, el("th", { text: `${DIMS[rk]} \\ ${DIMS[ck]}` }), colsK.map(b => el("th", { class: "n", text: pretty(b) })))));
+  tb.append(el("tbody", {}, rowsK.map(a => el("tr", {}, el("td", { text: pretty(a) }), colsK.map(b => { const r = get(a, b);
+    const small = r && (metric === "nmr" ? `${n0(r.nnd)}/${n0(r.known)}` : metric === "sbr" ? `${n0(r.sb)}/${n0(r.births)}` : "");
+    const attrs = Object.assign({ class: "cell" }, r && (metric !== "nmr" || r.known >= 30) ? heatCell(val(r), mx) : {});
+    return el("td", attrs, fmtv(r), small ? el("small", { text: small }) : null); })))));
+  const note = tb.parentElement.nextElementSibling;
+  if (!note || !note.classList.contains("note")) tb.parentElement.after(el("p", { class: "note", text: "Cells with fewer than 30 known live births are not shaded." }));
+}
+
+// ---------- ask ----------
+let SAMPLE = null, TURNS = [], CTL = null;
+const SUGG = [
+  "Which blocks had the highest neonatal mortality in 2025–26, and is the difference real or within chance?",
+  "How has NMR changed between the 2024 and 2025–26 cohorts for babies under 1,500 g?",
+  "What share of neonatal deaths happened at home or on the way, and in which blocks?",
+  "Among babies admitted to the SNCU and discharged alive, how many died before day 28?",
+  "List the records where the SNCU recorded a death but the cohort says the baby is alive.",
+  "Which data collectors have the most babies with an unknown day-28 outcome?",
+];
+function schema() {
+  const cat = T => Object.fromEntries(Object.entries(T.c).map(([k, c]) => [k, c.d.length <= 90 ? c.d : `${c.d.length} values`]));
+  return { babies: cat(B), sncu: cat(S) };
+}
+function rulesText() {
+  return `You answer questions about Sankalp newborn outcome surveillance data for Khargone district, Madhya Pradesh, India, for the programme team (neonatologists and public-health staff). Data exported ${D.meta.as_of}.
+
+DATA (de-identified; you only reach it through the tools):
+- "babies": one row per baby in two cohorts. period "2024" = births 16 May-31 Dec 2024 (Sankalp Khargone REDCap, outcomes collected retrospectively); "2025-26" = births Jan 2025-Oct 2026 (NHRP REDCap, day-28 phone follow-up). Fields (categorical, exact labels below): period, month (YYYY-MM of birth), year, quarter, block (residence), res_type, place (place of birth), facility (public facility of birth), delivery, plurality, sex, bw_band, ga_band, preterm, born_cond, outcome, death_age, death_place, death_facility, fu_by (who reported the outcome), reg_staff / fu_staff (coded staff), caste, religion, source, sncu_adm (linked SNCU admission Yes/No), sncu_outcome, sncu_cod, sncu_ind, sncu_dx, sncu_type. Derived for filters/group_by: neonatal_death (Yes/No), factor (death factors, multi-valued, 2025-26 only), flag (data-quality check codes, multi-valued). Numeric ranges: bw (g), ga (weeks), age_death (days), fu_days (days birth->follow-up), sncu_n.
+- "sncu": one row per SNCU admission at DH Khargone (May 2024-Sep 2026). Fields: month (admission), year, block, sex, type, pod (place of delivery), transport, maturity, ga_band, bw_band, indication, outcome (DISCHARGED/EXPIRED/LAMA/REFERRED/Not recorded), dx, cod (cause of death), ref_reason, caste, resus, linked (Yes/No found in cohort), cohort_outcome, flag. Numeric ranges: bw, ga, age_adm, los, age_death.
+Category labels: ${JSON.stringify(schema())}
+Data-quality checks: ${JSON.stringify(D.baby_flags.map(f => [f.code, f.label]))} and SNCU ${JSON.stringify(D.sncu_flags.map(f => [f.code, f.label]))}.
+
+DEFINITIONS: Neonatal death = live-born, died at 0-27 completed days. NMR = neonatal deaths per 1,000 live births with a known day-28 outcome ("known"). Early NMR = deaths 0-6 days. Stillbirth rate (SBR) = stillbirths per 1,000 total births. Coverage = known / live births. Babies under 28 days old are "Pending" and excluded. SNCU case fatality = EXPIRED / admissions.
+
+RULES:
+- Get every number from a tool call; never estimate or invent. Prefer one grouped query over many small ones.
+- Report denominators and, for rates, the 95% CI the tool returns. Say when groups are small (under ~200 known live births) or CIs overlap.
+- Recent birth months have many pending outcomes; say so when they matter.
+- Answer briefly (under about 200 words unless asked for more), in plain language, using simple Markdown (short paragraphs, bullets, and at most one small table).
+- Records may be listed by Record ID / admission ID only for data correction. Never try to identify a person.
+- The dashboard's own filters are currently: ${JSON.stringify(Object.fromEntries(Object.entries(F).filter(([, v]) => v)))}. Apply them only if the question refers to "this view" / "current filters"; otherwise query the full data and say what you included.`;
+}
+// Generic field access for the tools.
+function getter(T, isB, field) {
+  if (T.c[field]) { const c = T.c[field]; return i => c.v[i] < 0 ? null : c.d[c.v[i]]; }
+  if (isB && field === "neonatal_death") return i => B.x.nnd[i] ? "Yes" : "No";
+  if (isB && field === "factor") return i => D.factors.filter((_, b) => B.x.factors[i] & (1 << b));
+  if (field === "flag") { const defs = isB ? D.baby_flags : D.sncu_flags; return i => defs.filter((_, b) => T.x.flags[i] & (1 << b)).map(d => d.code); }
+  if (!isB && field === "linked") return i => S.x.link_tier[i] > 0 ? "Yes" : "No";
+  if (!isB && field === "cohort_outcome") return i => isFinite(S.x.baby[i]) ? lab(B, "outcome", S.x.baby[i]) : null;
+  if (field === "year") { const c = T.c.month; return i => c.v[i] < 0 ? null : c.d[c.v[i]].slice(0, 4); }
+  throw new Error(`Unknown field "${field}". Valid: ${Object.keys(T.c).concat(isB ? ["neonatal_death", "factor", "flag"] : ["linked", "cohort_outcome", "flag", "year"]).join(", ")}`);
+}
+const NUMS = { babies: { bw: "bw", ga: "ga", age_death: "age_death", fu_days: "fu_days", sncu_n: "sncu_n" }, sncu: { bw: "bw", ga: "ga", age_adm: "age_adm", los: "los", age_death: "age_death" } };
+function select(table, input) {
+  const isB = table !== "sncu", T = isB ? B : S, n = T.n;
+  const filters = input.filters && typeof input.filters === "object" ? input.filters : {};
+  const fs = Object.entries(filters).map(([k, v]) => { const g = getter(T, isB, k); const want = new Set((Array.isArray(v) ? v : [v]).map(String)); return i => { const x = g(i); return Array.isArray(x) ? x.some(y => want.has(y)) : want.has(String(x)); }; });
+  const ranges = input.ranges && typeof input.ranges === "object" ? input.ranges : {};
+  for (const [k, v] of Object.entries(ranges)) { const col = NUMS[isB ? "babies" : "sncu"][k]; if (!col) throw new Error(`Unknown range field "${k}". Valid: ${Object.keys(NUMS[isB ? "babies" : "sncu"]).join(", ")}`);
+    const [lo, hi] = Array.isArray(v) ? v : [v, v]; const a = T.x[col]; fs.push(i => isFinite(a[i]) && (lo == null || a[i] >= +lo) && (hi == null || a[i] <= +hi)); }
+  const mf = input.month_from ? String(input.month_from) : null, mt = input.month_to ? String(input.month_to) : null;
+  if (mf || mt) { const g = getter(T, isB, "month"); fs.push(i => { const m = g(i); return m && (!mf || m >= mf) && (!mt || m <= mt); }); }
+  const out = []; for (let i = 0; i < n; i++) { let ok = true; for (const f of fs) if (!f(i)) { ok = false; break; } if (ok) out.push(i); }
+  return out;
+}
+function groupRows(table, idx, groupBy, rowFn, finish) {
+  const isB = table !== "sncu", T = isB ? B : S, gs = (groupBy || []).slice(0, 2).map(g => [g, getter(T, isB, g)]);
+  const m = new Map();
+  for (const i of idx) {
+    let keys = [[]];
+    for (const [, g] of gs) { const v = g(i); const vs = Array.isArray(v) ? (v.length ? v : ["(none)"]) : [v ?? "(missing)"]; keys = keys.flatMap(k => vs.map(x => k.concat([x]))); }
+    for (const k of keys) { const s = JSON.stringify(k); let r = m.get(s); if (!r) m.set(s, r = { k, acc: rowFn() }); finish.add(r.acc, i); }
+  }
+  const rows = [...m.values()].map(({ k, acc }) => Object.assign(Object.fromEntries(gs.map(([g], j) => [g, k[j]])), finish.out(acc)));
+  return rows.length > 300 ? { note: `${rows.length} groups; showing the 300 largest`, rows: rows.sort((a, b) => (b.live_births || b.admissions) - (a.live_births || a.admissions)).slice(0, 300) } : { rows };
+}
+const r1 = x => isFinite(x) ? Math.round(x * 10) / 10 : null;
+const TOOLS = [
+  { name: "query_babies", description: "Counts and rates for cohort babies matching filters, optionally grouped by up to 2 fields. Each row: births, live_births, stillbirths, known (live births with known day-28 outcome), pending, unknown_due, deaths (neonatal 0-27 d), early_deaths, nmr, nmr_ci [lo,hi], early_nmr, sbr (per 1000), coverage %.",
+    inputSchema: { type: "object", properties: { filters: { type: "object", description: "field -> exact label or array of labels" }, ranges: { type: "object", description: "numeric field -> [min, max] inclusive (null for open)" }, month_from: { type: "string", description: "YYYY-MM birth month, inclusive" }, month_to: { type: "string" }, group_by: { type: "array", items: { type: "string" }, maxItems: 2 } } },
+    execute: input => { step(`query_babies ${short(input)}`); const idx = select("babies", input);
+      return groupRows("babies", idx, input.group_by, zero, { add: addRow, out: r => { rates(r); return { births: r.births, live_births: r.lb, stillbirths: r.sb, known: r.known, pending: r.pending, unknown_due: r.unknown, deaths: r.nnd, early_deaths: r.early, nmr: r1(r.nmr), nmr_ci: [r1(r.lo), r1(r.hi)], early_nmr: r1(r.enmr), sbr: r1(r.sbr), coverage: r1(100 * r.cov) }; } }); } },
+  { name: "query_sncu", description: "Counts for SNCU admissions matching filters, optionally grouped by up to 2 fields. Each row: admissions, deaths, cfr % with 95% CI, lama, referred, discharged, not_recorded, median_los, median_bw.",
+    inputSchema: { type: "object", properties: { filters: { type: "object" }, ranges: { type: "object" }, month_from: { type: "string", description: "YYYY-MM admission month" }, month_to: { type: "string" }, group_by: { type: "array", items: { type: "string" }, maxItems: 2 } } },
+    execute: input => { step(`query_sncu ${short(input)}`); const idx = select("sncu", input), oc = S.c.outcome;
+      const med = a => { if (!a.length) return null; a.sort((x, y) => x - y); return a[Math.floor(a.length / 2)]; };
+      return groupRows("sncu", idx, input.group_by, () => ({ n: 0, d: 0, l: 0, rf: 0, dc: 0, nr: 0, los: [], bw: [] }), {
+        add: (r, i) => { r.n++; const o = oc.d[oc.v[i]]; if (o === "EXPIRED") r.d++; else if (o === "LAMA") r.l++; else if (o === "REFERRED") r.rf++; else if (o === "DISCHARGED") r.dc++; else r.nr++; if (isFinite(S.x.los[i])) r.los.push(S.x.los[i]); if (isFinite(S.x.bw[i])) r.bw.push(S.x.bw[i]); },
+        out: r => { const [lo, hi] = wilson(r.d, r.n); return { admissions: r.n, deaths: r.d, cfr: r1(100 * r.d / r.n), cfr_ci: [r1(100 * lo), r1(100 * hi)], lama: r.l, referred: r.rf, discharged: r.dc, not_recorded: r.nr, median_los: med(r.los), median_bw: med(r.bw) }; } }); } },
+  { name: "list_records", description: "Up to 50 de-identified records matching filters, with their ID (REDCap Record ID + period + baby number, or SNCU admission ID) and the fields you ask for. Use for data-correction lists only.",
+    inputSchema: { type: "object", properties: { table: { type: "string", enum: ["babies", "sncu"] }, filters: { type: "object" }, ranges: { type: "object" }, month_from: { type: "string" }, month_to: { type: "string" }, fields: { type: "array", items: { type: "string" } }, limit: { type: "number" } }, required: ["table"] },
+    execute: input => { const tbl = input.table === "sncu" ? "sncu" : "babies"; step(`list_records ${short(input)}`); const isB = tbl === "babies", T = isB ? B : S;
+      const idx = select(tbl, input), lim = Math.min(50, Math.max(1, +input.limit || 25)); const fields = (Array.isArray(input.fields) ? input.fields : ["month", "block", "outcome", "flag"]).slice(0, 10);
+      const gets = fields.map(f => [f, getter(T, isB, f)]);
+      return { total_matching: idx.length, rows: idx.slice(0, lim).map(i => Object.assign(isB ? { record_id: B.s.rid[i], period: lab(B, "period", i), baby_no: B.x.bn[i] } : { admission_id: S.s.aid[i] }, Object.fromEntries(gets.map(([f, g]) => [f, g(i)])))) }; } },
+];
+let STEP_EL = null;
+const short = o => { const s = JSON.stringify(o); return s.length > 110 ? s.slice(0, 107) + "…" : s; };
+function step(t) { if (STEP_EL) { STEP_EL.hidden = false; STEP_EL.append(el("div", { text: "› " + t })); } }
+function md(text) { // tiny, escaped Markdown renderer
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>").replace(/(^|[\s(])\*(?!\s)(.+?)\*(?=[\s).,;:]|$)/g, "$1<i>$2</i>");
+  const lines = text.split("\n"); let html = "", list = false, tbl = [];
+  const flushT = () => { if (!tbl.length) return; const rows = tbl.filter(r => !/^\s*\|?\s*:?-{2,}/.test(r)).map(r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => inline(c.trim())));
+    html += '<div class="tw"><table><thead><tr>' + rows[0].map(c => `<th>${c}</th>`).join("") + "</tr></thead><tbody>" + rows.slice(1).map(r => "<tr>" + r.map(c => `<td>${c}</td>`).join("") + "</tr>").join("") + "</tbody></table></div>"; tbl = []; };
+  for (const ln of lines) {
+    if (/^\s*\|.*\|\s*$/.test(ln)) { if (list) { html += "</ul>"; list = false; } tbl.push(ln); continue; } else flushT();
+    const m = ln.match(/^\s*[-*•]\s+(.*)/);
+    if (m) { if (!list) { html += "<ul>"; list = true; } html += `<li>${inline(m[1])}</li>`; continue; }
+    if (list) { html += "</ul>"; list = false; }
+    const h = ln.match(/^#{1,4}\s+(.*)/); if (h) { html += `<p><b>${inline(h[1])}</b></p>`; continue; }
+    if (ln.trim()) html += `<p>${inline(ln)}</p>`;
+  }
+  flushT(); if (list) html += "</ul>";
+  return html;
+}
+function ask() {
+  const sg = $("sugg"); if (!sg.children.length) for (const s of SUGG) sg.append(el("button", { text: s, onclick: () => { $("q").value = s; send(); } }));
+}
+function bubble(role, text) { const b = el("div", { class: "msg " + role }); if (role === "user") b.textContent = text; $("msgs").append(b); b.scrollIntoView({ block: "nearest" }); return b; }
+async function send() {
+  const q = $("q").value.trim(); if (!q || CTL) return;
+  if (!SAMPLE) { $("ask-status").textContent = "Asking Claude is not available in this view. Open the page on claude.ai to use it."; return; }
+  $("q").value = ""; bubble("user", q);
+  const bot = bubble("bot"); STEP_EL = el("div", { class: "steps", hidden: true }); const body = el("div", { text: "Thinking…" }); bot.append(STEP_EL, body);
+  TURNS.push({ role: "user", content: q });
+  const turns = [{ role: "user", content: rulesText() }, ...TURNS.slice(-8)];
+  CTL = new AbortController(); $("stop-btn").hidden = false; $("ask-btn").disabled = true; $("ask-status").textContent = "";
+  let limits = null; try { limits = await SAMPLE.limits(); } catch {}
+  const opts = { signal: CTL.signal, cache: false, onText: ({ text }) => { body.innerHTML = md(text); } };
+  if (limits && limits.tools) opts.tools = TOOLS;
+  else turns[0] = { role: "user", content: rulesText() + "\n\nTools are unavailable in this view. Use only these precomputed tables:\n" + JSON.stringify(fallbackContext()) };
+  if (opts.tools) delete opts.cache;
+  try {
+    const { text, truncated } = await SAMPLE(turns, opts);
+    body.innerHTML = md(text); TURNS.push({ role: "assistant", content: text });
+    if (truncated) bot.append(el("p", { class: "note", text: "The answer was cut short. Ask for less at a time." }));
+  } catch (e) {
+    const code = e && e.code;
+    if (e && e.text) body.innerHTML = md(e.text); else body.textContent = "";
+    const msg = { not_granted: "Claude was not allowed for this page. You can change this in the artifact's permissions.", sampling_disabled: "Claude is not available for this account.", rate_limited: "Too many questions for now. Try again in a little while.",
+      cancelled: "Stopped.", refused: "Claude could not answer that. Try rephrasing.", prompt_too_large: "That was too much at once. Ask a narrower question.", session_expired: "Please sign in again." }[code] || "Something went wrong. Try again.";
+    bot.append(el("p", { class: "note", text: msg }));
+    TURNS.pop();
+    if (["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(code)) { $("ask-btn").disabled = true; $("ask-status").textContent = msg; CTL = null; $("stop-btn").hidden = true; return; }
+  }
+  CTL = null; $("stop-btn").hidden = true; $("ask-btn").disabled = false; bot.scrollIntoView({ block: "nearest" });
+}
+function fallbackContext() {
+  const all = Int32Array.from({ length: B.n }, (_, i) => i);
+  const pick = r => ({ key: r.key, live_births: r.lb, known: r.known, deaths: r.nnd, nmr: r1(r.nmr), ci: [r1(r.lo), r1(r.hi)], sbr: r1(r.sbr) });
+  return Object.fromEntries(["period", "block", "bw_band", "ga_band", "place", "sex", "year", "death_age", "death_place"].map(k => [k, by(all, k).map(pick)]));
+}
+$("ask-btn").addEventListener("click", send);
+$("q").addEventListener("keydown", e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(); });
+$("stop-btn").addEventListener("click", () => CTL && CTL.abort());
+$("clear-btn").addEventListener("click", () => { if (CTL) CTL.abort(); TURNS = []; $("msgs").textContent = ""; });
+
+// ---------- boot ----------
+(async function boot() {
+  if (DATA_B64.startsWith("__")) { $("loading").textContent = "No data is embedded in this copy. Build it with: python -m sankalp.build …"; return; }
+  try { D = await decode(DATA_B64); }
+  catch (e) { $("loading").textContent = "This browser could not unpack the data (it needs a 2023 or newer browser)."; return; }
+  B = prep(D.babies); S = prep(D.sncu); addDerived(B); addDerived(S);
+  const od = B.c.outcome.d; OC = { pending: od.indexOf("Pending (under 28 days)"), unknown: new Set(od.map((d, i) => d.startsWith("Unknown") ? i : -1).filter(i => i >= 0)) };
+  const saved = store.get("sankalp.filters"); if (saved) for (const k in F) if (typeof saved[k] === "string") F[k] = saved[k];
+  for (const k in F) { const dict = (k === "from" || k === "to") ? B.c.month.d : B.c[k] && B.c[k].d; if (F[k] && !(dict && dict.includes(F[k]))) F[k] = ""; }
+  const months = B.c.month.d;
+  $("asof").innerHTML = "";
+  $("asof").append("Births ", el("b", { text: `${mlab(months[0])} – ${mlab(months[months.length - 1])}` }), " · data as of ", el("b", { text: new Date(D.meta.as_of).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) }));
+  moreOpen = [...MORE].some(k => F[k]);
+  buildFilters();
+  $("loading").remove();
+  IDX = babyIdx(); SIDX = sncuIdx(); syncFilterUI();
+  showTab(location.hash.slice(1) || "overview");
+  try { SAMPLE = await claude.use("sample"); } catch { SAMPLE = null; }
+  if (!SAMPLE) $("ask-status").textContent = "Asking Claude works when this page is opened on claude.ai.";
+  try { DL = await claude.use("downloads"); } catch { DL = null; }
+  if (QSEL) $("q-csv").hidden = !DL;
+})();
+</script>

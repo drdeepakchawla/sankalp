@@ -1,0 +1,15 @@
+# Never commit data: the exports and every derived file hold identifiable patient records.
+output/
+data/
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.pkl
+dashboard_data.txt
+
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.streamlit/secrets.toml
